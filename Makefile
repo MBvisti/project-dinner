@@ -32,7 +32,7 @@ format:
 # Work around for connecting to DB on host when running the app in docker
 dev: vet format
 	@docker build --rm --build-arg VERSION=${VERSION} -t ${REGISTRY}/${OUT}:${VERSION} .
-	@docker run --rm -p 5000:5000 ${REGISTRY}/${OUT}:${VERSION}
+	@docker run --rm -e DEVELOPMENT_MODE=true -e DATABASE_URL="postgres://postgres:postgres@host.docker.internal/bandlokaler_dev?sslmode=disable" -p 5000:5000 ${REGISTRY}/${OUT}:${VERSION}
 
 test: vet $(BUILD_DIRS)
 	@docker run                                                 	\

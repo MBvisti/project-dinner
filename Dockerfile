@@ -12,7 +12,7 @@ WORKDIR /app
 
 ARG VERSION
 
-#COPY go.sum .
+COPY go.sum .
 COPY go.mod .
 
 RUN go mod download
