@@ -42,9 +42,10 @@ func run() error {
 		return err
 	}
 
-	defer database.Close()
-
 	s := app.NewRepository(database)
+
+	defer database.Close()
+	s.AutoMigrate()
 
 	server := app.NewServer(s, r)
 
