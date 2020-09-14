@@ -28,13 +28,13 @@ type Recipe struct {
 
 type Ingredient struct {
 	gorm.Model
-	RecipeID        uint   `gorm:"not null"`
-	What            string `gorm:"not null"`
+	RecipeID uint   `gorm:"not null"`
+	What     string `gorm:"not null"`
 }
 
 type Instruction struct {
 	gorm.Model
-	IngredientID uint `gorm:"not null"`
+	IngredientID uint   `gorm:"not null"`
 	Step         int    `gorm:"not null"`
 	Text         string `gorm:"not null"`
 }

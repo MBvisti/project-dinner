@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/gocolly/colly/v2"
 	"github.com/jinzhu/gorm"
 	"os"
 	app "project-dinner/pkg"
@@ -47,7 +48,9 @@ func run() error {
 	defer database.Close()
 	s.AutoMigrate()
 
-	server := app.NewServer(s, r)
+	c := colly.NewCollector()
+
+	server := app.NewServer(s, r, c)
 
 	err = server.Run(":" + port)
 

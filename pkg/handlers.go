@@ -64,3 +64,26 @@ func (s *Server) ResetDatabase() gin.HandlerFunc {
 		c.JSON(http.StatusOK, response)
 	}
 }
+
+func (s *Server) TriggerCrawler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Header("Content-Type", "application/json")
+
+		err := s.GetRecipe("https://www.eatyourselfskinny.com/margarita-shrimp-skewers/#tasty-recipes-15098")
+
+		if err != nil {
+			response := map[string]string{
+				"status": "failure",
+				"data":   err.Error(),
+			}
+
+			c.JSON(http.StatusInternalServerError, response)
+			return
+		}
+
+		response := map[string]string{
+			"status": "success",
+		}
+		c.JSON(http.StatusOK, response)
+	}
+}

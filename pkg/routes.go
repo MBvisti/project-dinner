@@ -9,6 +9,7 @@ func (s *Server) routes() *gin.Engine {
 	{
 		v1.GET("/status", s.ApiStatus())
 		v1.POST("/reset", s.ResetDatabase())
+		v1.GET("/crawler", s.TriggerCrawler())
 	}
 
 	return r
