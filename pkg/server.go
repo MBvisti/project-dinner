@@ -56,7 +56,7 @@ func (s *Server) CronMailer() error {
 	mailTwo.SetHeader("Subject", "test cron job")
 	mailTwo.SetBody("text/html", "This is a test email sent every 5 minute by the cronjob")
 
-	s.cron.AddFunc("*/5 * * * *", func() {
+	s.cron.AddFunc("*/2 * * * *", func() {
 		err := s.mailer.DialAndSend(mail, mailTwo)
 
 		if err != nil {
