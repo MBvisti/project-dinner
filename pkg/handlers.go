@@ -64,3 +64,17 @@ func (s *Server) ResetDatabase() gin.HandlerFunc {
 		c.JSON(http.StatusOK, response)
 	}
 }
+
+func (s *Server) StopCronJob() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Header("Content-Type", "application/json")
+
+		s.cron.Stop()
+
+		response := map[string]string{
+			"status": "success",
+			"data":   "cron job stopped",
+		}
+		c.JSON(http.StatusOK, response)
+	}
+}

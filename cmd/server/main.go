@@ -5,6 +5,8 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
+	"github.com/robfig/cron/v3"
+	"gopkg.in/gomail.v2"
 	"os"
 	app "project-dinner/pkg"
 	"strconv"
@@ -47,7 +49,16 @@ func run() error {
 	defer database.Close()
 	s.AutoMigrate()
 
-	server := app.NewServer(s, r)
+	c := cron.New()
+
+	sendGridUser := os.Getenv("SEND_GRID_USER")
+	sendGridPassword := os.Getenv("SEND_GRID_API_KEY")
+	mailHost := os.Getenv("HOST")
+	mailPort, err := strconv.Atoi(os.Getenv("MAIL_PORT"))
+
+	m := gomail.NewDialer(mailHost, mailPort, sendGridUser, sendGridPassword)
+
+	server := app.NewServer(s, r, c, m)
 
 	err = server.Run(":" + port)
 

@@ -2,6 +2,8 @@ package app
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/robfig/cron/v3"
+	"gopkg.in/gomail.v2"
 	"log"
 	"net/http"
 )
@@ -9,22 +11,49 @@ import (
 type Server struct {
 	storage *Repository
 	router  *gin.Engine
+	cron 	*cron.Cron
+	mailer *gomail.Dialer
 }
 
-func NewServer(s *Repository, r *gin.Engine) Server {
+func NewServer(s *Repository, r *gin.Engine, c *cron.Cron, m *gomail.Dialer) Server {
 	return Server{
 		storage: s,
 		router:  r,
+		cron:    c,
+		mailer:  m,
 	}
 }
 
 func (s *Server) Run(addr string) error {
+	log.Print("Calling cronjob")
+	err := s.CronMailer()
+	log.Printf("this is err from cronjob: %v", err)
+
 	log.Printf("Starting the server on: %v", addr)
-	err := http.ListenAndServe(addr, s.routes())
+	err = http.ListenAndServe(addr, s.routes())
 
 	if err != nil {
 		return err
 	}
 
+	return nil
+}
+
+func (s *Server) CronMailer() error {
+	mail := gomail.NewMessage()
+	mail.SetAddressHeader("From", "noreply@mbvistisen.dk", "CronJob")
+	mail.SetHeader("To", "morten@mbvistisen.dk")
+	mail.SetHeader("Subject", "test cron job")
+	mail.SetBody("text/html", "This is a test email sent every 5 minute by the cronjob")
+
+	s.cron.AddFunc("*/5 * * * *", func(){
+		err := s.mailer.DialAndSend(mail)
+
+		if err != nil {
+			log.Printf("there was an error sending the mail: %v", err)
+		}
+	})
+
+	s.cron.Start()
 	return nil
 }
