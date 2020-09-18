@@ -52,7 +52,7 @@ func (s *Server) CronMailer() error {
 
 	mailTwo := gomail.NewMessage()
 	mailTwo.SetAddressHeader("From", "noreply@mbvistisen.dk", "CronJob")
-	mailTwo.SetHeader("To", "vistisen@live.dk")
+	mailTwo.SetHeader("To", "mbv1406@gmail.com")
 	mailTwo.SetHeader("Subject", "test cron job")
 	mailTwo.SetBody("text/html", "This is a test email sent every 5 minute by the cronjob")
 
