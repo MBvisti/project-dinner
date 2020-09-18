@@ -11,8 +11,8 @@ import (
 type Server struct {
 	storage *Repository
 	router  *gin.Engine
-	cron 	*cron.Cron
-	mailer *gomail.Dialer
+	cron    *cron.Cron
+	mailer  *gomail.Dialer
 }
 
 func NewServer(s *Repository, r *gin.Engine, c *cron.Cron, m *gomail.Dialer) Server {
@@ -27,7 +27,11 @@ func NewServer(s *Repository, r *gin.Engine, c *cron.Cron, m *gomail.Dialer) Ser
 func (s *Server) Run(addr string) error {
 	log.Print("Calling cronjob")
 	err := s.CronMailer()
-	log.Printf("this is err from cronjob: %v", err)
+
+	if err != nil {
+		log.Printf("this is err from cronjob: %v", err)
+		return err
+	}
 
 	log.Printf("Starting the server on: %v", addr)
 	err = http.ListenAndServe(addr, s.routes())
@@ -46,8 +50,14 @@ func (s *Server) CronMailer() error {
 	mail.SetHeader("Subject", "test cron job")
 	mail.SetBody("text/html", "This is a test email sent every 5 minute by the cronjob")
 
-	s.cron.AddFunc("*/5 * * * *", func(){
-		err := s.mailer.DialAndSend(mail)
+	mailTwo := gomail.NewMessage()
+	mailTwo.SetAddressHeader("From", "noreply@mbvistisen.dk", "CronJob")
+	mailTwo.SetHeader("To", "vistisen@live.dk")
+	mailTwo.SetHeader("Subject", "test cron job")
+	mailTwo.SetBody("text/html", "This is a test email sent every 5 minute by the cronjob")
+
+	s.cron.AddFunc("*/5 * * * *", func() {
+		err := s.mailer.DialAndSend(mail, mailTwo)
 
 		if err != nil {
 			log.Printf("there was an error sending the mail: %v", err)
