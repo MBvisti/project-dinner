@@ -3,7 +3,7 @@ PKG := project-dinner/pkg
 PKG_LIST := $(shell go list ${PKG}/...)
 
 # This version-strategy uses a manual value to set the version string
-VERSION := 0.0.2
+VERSION := 0.0.3
 BUILD_ENV := "production"
 APP_NAME_STAGING := project-dinner-staging
 APP_NAME_PRODUCTION := project-dinner-production
