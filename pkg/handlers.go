@@ -131,7 +131,9 @@ func (s *Server) EmailList() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Header("Content-Type", "application/json")
 
-		users, err := s.storage.AllUsers()
+		//users, err := s.storage.GetEmailList()
+
+		recipes, err := s.storage.TodaysRecipes()
 
 		if err != nil {
 			response := map[string]string{
@@ -142,6 +144,6 @@ func (s *Server) EmailList() gin.HandlerFunc {
 			return
 		}
 
-		c.JSON(http.StatusOK, users)
+		c.JSON(http.StatusOK, recipes)
 	}
 }
