@@ -6,6 +6,8 @@ import (
 	"gopkg.in/gomail.v2"
 	"log"
 	"net/http"
+	"os"
+	"strconv"
 )
 
 type Server struct {
@@ -25,11 +27,21 @@ func NewServer(s *Repository, r *gin.Engine, c *cron.Cron, m *gomail.Dialer) Ser
 }
 
 func (s *Server) Run(addr string) error {
-	log.Print("Calling cronjob")
+	// TODO: change this to setup the main cronjob
 	err := s.CronMailer()
-
 	if err != nil {
 		log.Printf("this is err from cronjob: %v", err)
+		return err
+	}
+
+	// TODO: change this when no longer needed
+	isStaging, err := strconv.ParseBool(os.Getenv("IS_STAGING"))
+	if err != nil {
+		return err
+	}
+
+	if isStaging {
+		err = s.storage.DestructiveReset()
 		return err
 	}
 
