@@ -78,3 +78,15 @@ func (s *Server) StopCronJob() gin.HandlerFunc {
 		c.JSON(http.StatusOK, response)
 	}
 }
+
+func (s *Server) WakeDyno() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Header("Content-Type", "application/json")
+
+		response := map[string]string{
+			"status": "success",
+			"data":   "dyno is awake again",
+		}
+		c.JSON(http.StatusOK, response)
+	}
+}
