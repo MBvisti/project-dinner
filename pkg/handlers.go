@@ -126,3 +126,22 @@ func (s *Server) WakeDyno() gin.HandlerFunc {
 		c.JSON(http.StatusOK, response)
 	}
 }
+
+func (s *Server) EmailList() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Header("Content-Type", "application/json")
+
+		users, err := s.storage.AllUsers()
+
+		if err != nil {
+			response := map[string]string{
+				"status": "failure",
+				"data":   "couldn't retrive list",
+			}
+			c.JSON(http.StatusInternalServerError, response)
+			return
+		}
+
+		c.JSON(http.StatusOK, users)
+	}
+}
