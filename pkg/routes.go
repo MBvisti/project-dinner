@@ -12,6 +12,7 @@ func (s *Server) routes() *gin.Engine {
 		v1.POST("/stop-cron", s.StopCronJob())
 		v1.POST("/recipe", s.CreateRecipe())
 		v1.GET("/wakey-wakey", s.WakeDyno())
+		v1.GET("/users", s.EmailList())
 	}
 
 	return r
