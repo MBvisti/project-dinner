@@ -4,6 +4,7 @@ import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"log"
+	"math/rand"
 )
 
 type Repository struct {
@@ -25,6 +26,11 @@ type Recipe struct {
 	Source      string
 	Rating      string
 	Review      string
+}
+
+type EmailList struct {
+	Email string
+	Name  string
 }
 
 func NewRepository(db *gorm.DB) *Repository {
@@ -120,26 +126,37 @@ func (r *Repository) AutoMigrate() error {
 	return nil
 }
 
-type EmailList struct {
-	Email string
+func (r *Repository) GetEmailList() ([]EmailList, error) {
+	var emailList []EmailList
+	err := r.db.Table("users").Select("email, name").Scan(&emailList).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return emailList, nil
 }
 
-func (r *Repository) AllUsers() ([]User, error) {
-	var users []User
-	err := r.db.Find(&users).Error
+func randInt(min int, max int) int {
+	return min + rand.Intn(max-min)
+}
+
+func (r *Repository) TodaysRecipes() ([]Recipe, error) {
+	var recipes []Recipe
+	var count int
+	err := r.db.Model(&recipes).Count(&count).Error
+	if err != nil {
+		return nil, err
+	}
+
+	log.Printf("this is the amount err: %v", count)
+
+	var selectedRecipes []Recipe
+	err = r.db.Find(&selectedRecipes, []int{randInt(1, count), randInt(1, count), randInt(1, count), randInt(1, count)}).Error
 
 	if err != nil {
 		return nil, err
 	}
 
-	var emailList []EmailList
-	err = r.db.Table("users").Select("email").Scan(&emailList).Error
-
-	if err != nil {
-		return nil, err
-	}
-
-	log.Print(emailList)
-
-	return users, nil
+	return selectedRecipes, nil
 }
