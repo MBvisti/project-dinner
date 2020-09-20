@@ -3,6 +3,7 @@ package app
 import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
+	"log"
 )
 
 type Repository struct {
@@ -117,4 +118,28 @@ func (r *Repository) AutoMigrate() error {
 		return err
 	}
 	return nil
+}
+
+type EmailList struct {
+	Email string
+}
+
+func (r *Repository) AllUsers() ([]User, error) {
+	var users []User
+	err := r.db.Find(&users).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	var emailList []EmailList
+	err = r.db.Table("users").Select("email").Scan(&emailList).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	log.Print(emailList)
+
+	return users, nil
 }
