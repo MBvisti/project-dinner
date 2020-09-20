@@ -22,7 +22,7 @@ type Recipe struct {
 	Image       string
 	Link        string `gorm:"not null"`
 	Description string `gorm:"not null"`
-	FoundOn     string `json:"found_on"`
+	Source      string
 	Rating      string
 	Review      string
 }
