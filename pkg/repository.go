@@ -18,13 +18,13 @@ type User struct {
 
 type Recipe struct {
 	gorm.Model
-	Name    string `gorm:"not null"`
-	Image   string
-	Link    string `gorm:"not null"`
+	Name        string `gorm:"not null"`
+	Image       string
+	Link        string `gorm:"not null"`
 	Description string `gorm:"not null"`
-	FoundOn string
-	Rating string
-	Review string
+	FoundOn     string `json:"found_on"`
+	Rating      string
+	Review      string
 }
 
 func NewRepository(db *gorm.DB) *Repository {
