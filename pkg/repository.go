@@ -21,7 +21,10 @@ type Recipe struct {
 	Name    string `gorm:"not null"`
 	Image   string
 	Link    string `gorm:"not null"`
-	Credits string
+	Description string `gorm:"not null"`
+	FoundOn string
+	Rating string
+	Review string
 }
 
 func NewRepository(db *gorm.DB) *Repository {
@@ -32,7 +35,7 @@ func NewRepository(db *gorm.DB) *Repository {
 }
 
 func (r *Repository) DestructiveReset() error {
-	err := r.db.DropTableIfExists(&User{}).Error
+	err := r.db.DropTableIfExists(&User{}, &Recipe{}).Error
 	if err != nil {
 		return err
 	}
@@ -40,8 +43,12 @@ func (r *Repository) DestructiveReset() error {
 	return r.AutoMigrate()
 }
 
+func (r *Repository) CreateRecipe(recipe *Recipe) error {
+	return r.db.Create(recipe).Error
+}
+
 func (r *Repository) AutoMigrate() error {
-	if err := r.db.AutoMigrate(&User{}).Error; err != nil {
+	if err := r.db.AutoMigrate(&User{}, &Recipe{}).Error; err != nil {
 		return err
 	}
 	return nil
