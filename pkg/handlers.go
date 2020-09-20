@@ -78,3 +78,39 @@ func (s *Server) StopCronJob() gin.HandlerFunc {
 		c.JSON(http.StatusOK, response)
 	}
 }
+
+func (s *Server) CreateRecipe() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Header("Content-Type", "application/json")
+
+		var recipe Recipe
+
+		err := c.ShouldBindJSON(&recipe)
+
+		if err != nil {
+			response := map[string]string{
+				"status": "failure",
+				"data":   "recipe not created",
+			}
+			c.JSON(http.StatusBadRequest, response)
+			return
+		}
+
+		err = s.storage.CreateRecipe(&recipe)
+
+		if err != nil {
+			response := map[string]string{
+				"status": "failure",
+				"data":   "recipe not created",
+			}
+			c.JSON(http.StatusInternalServerError, response)
+			return
+		}
+
+			response := map[string]string{
+				"status": "success",
+				"data":   "recipe created",
+			}
+			c.JSON(http.StatusOK, response)
+	}
+}
