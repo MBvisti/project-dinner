@@ -10,7 +10,7 @@ func (s *Server) routes() *gin.Engine {
 		v1.GET("/status", s.ApiStatus())
 		v1.POST("/reset", s.ResetDatabase())
 		v1.POST("/stop-cron", s.StopCronJob())
-		v1.POST("/wakey-wakey", s.WakeDyno())
+		v1.GET("/wakey-wakey", s.WakeDyno())
 	}
 
 	return r
