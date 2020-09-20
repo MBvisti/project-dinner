@@ -61,8 +61,12 @@ func (s *Server) CronMailer() error {
 		}
 	})
 
-	s.cron.AddFunc("0 13 * * *", func() {
-		log.Print("Hello from 1pm job")
+	s.cron.AddFunc("0 30 13 * * *", func() {
+		err := s.mailer.DialAndSend(mails...)
+
+		if err != nil {
+			log.Printf("there was an error sending the mail: %v", err)
+		}
 	})
 
 	s.cron.Start()
