@@ -42,7 +42,9 @@ func (s *Server) Run(addr string) error {
 
 	if isStaging {
 		err = s.storage.DestructiveReset()
-		return err
+		if err != nil {
+			return err
+		}
 	}
 
 	log.Printf("Starting the server on: %v", addr)
