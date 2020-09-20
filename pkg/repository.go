@@ -18,25 +18,10 @@ type User struct {
 
 type Recipe struct {
 	gorm.Model
-	Name         string `gorm:"not null"`
-	Image        string
-	Link         string `gorm:"not null"`
-	Credits      string
-	Instructions []Instruction `gorm:"not null"`
-	Ingredients  []Ingredient  `gorm:"not null"`
-}
-
-type Ingredient struct {
-	gorm.Model
-	RecipeID uint   `gorm:"not null"`
-	What     string `gorm:"not null"`
-}
-
-type Instruction struct {
-	gorm.Model
-	IngredientID uint   `gorm:"not null"`
-	Step         int    `gorm:"not null"`
-	Text         string `gorm:"not null"`
+	Name    string `gorm:"not null"`
+	Image   string
+	Link    string `gorm:"not null"`
+	Credits string
 }
 
 func NewRepository(db *gorm.DB) *Repository {
@@ -47,7 +32,7 @@ func NewRepository(db *gorm.DB) *Repository {
 }
 
 func (r *Repository) DestructiveReset() error {
-	err := r.db.DropTableIfExists(&User{}, &Recipe{}, &Ingredient{}, &Instruction{}).Error
+	err := r.db.DropTableIfExists(&User{}).Error
 	if err != nil {
 		return err
 	}
@@ -56,7 +41,7 @@ func (r *Repository) DestructiveReset() error {
 }
 
 func (r *Repository) AutoMigrate() error {
-	if err := r.db.AutoMigrate(&User{}, &Recipe{}, &Ingredient{}, &Instruction{}).Error; err != nil {
+	if err := r.db.AutoMigrate(&User{}).Error; err != nil {
 		return err
 	}
 	return nil

@@ -44,10 +44,10 @@ func (s *Server) Run(addr string) error {
 }
 
 func (s *Server) CronMailer() error {
-	address := []string{"morten@mbvistisen.dk", "vistisen@live.dk", "mbv1406@gmail.com"}
+	//address := []string{"morten@mbvistisen.dk", "vistisen@live.dk", "mbv1406@gmail.com"}
 	mail := gomail.NewMessage()
 	mail.SetAddressHeader("From", "noreply@mbvistisen.dk", "CronJob")
-	mail.SetHeader("To", address...)
+	mail.SetHeader("To", "mbv1406@gmail.com")
 	mail.SetHeader("Subject", "test cron job at 4pm")
 	mail.SetBody("text/html", "This is a test email sent everyday at 4pm by the cronjob")
 
@@ -56,14 +56,7 @@ func (s *Server) CronMailer() error {
 	s.cron.AddFunc("0 16 * * *", func() {
 		err := s.mailer.DialAndSend(mails...)
 
-		if err != nil {
-			log.Printf("there was an error sending the mail: %v", err)
-		}
-	})
-
-	s.cron.AddFunc("0 30 13 * * *", func() {
-		err := s.mailer.DialAndSend(mails...)
-
+		log.Printf("this is from the cron job")
 		if err != nil {
 			log.Printf("there was an error sending the mail: %v", err)
 		}

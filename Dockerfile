@@ -24,6 +24,8 @@ COPY pkg ./pkg
 RUN GOOS=linux GOARCH=amd64 go build -ldflags "-X main.version=${VERSION} -s -w" -a -o main cmd/server/main.go
 
 FROM alpine
+# to make the program have time zone data
+RUN apk add --no-cache tzdata
 COPY --from=build-env /app/main /
 
 CMD ["./main"]

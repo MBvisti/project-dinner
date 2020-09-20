@@ -10,6 +10,7 @@ import (
 	"os"
 	app "project-dinner/pkg"
 	"strconv"
+	"time"
 )
 
 func main() {
@@ -49,7 +50,13 @@ func run() error {
 	defer database.Close()
 	s.AutoMigrate()
 
-	c := cron.New()
+	t, err := time.LoadLocation("Europe/Copenhagen")
+
+	if err != nil {
+		return err
+	}
+
+	c := cron.New(cron.WithLocation(t))
 
 	sendGridUser := os.Getenv("SEND_GRID_USER")
 	sendGridPassword := os.Getenv("SEND_GRID_API_KEY")
