@@ -107,11 +107,11 @@ func (s *Server) CreateRecipe() gin.HandlerFunc {
 			return
 		}
 
-			response := map[string]string{
-				"status": "success",
-				"data":   "recipe created",
-			}
-			c.JSON(http.StatusOK, response)
+		response := map[string]string{
+			"status": "success",
+			"data":   "recipe created",
+		}
+		c.JSON(http.StatusOK, response)
 	}
 }
 
