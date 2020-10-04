@@ -41,6 +41,13 @@ func (s *Server) Run(addr string) error {
 		return err
 	}
 
+	s.GetFourRandomRecipes()
+
+	if err != nil {
+		log.Printf("this is err from cronjob: %v", err)
+		return err
+	}
+
 	// TODO: change this when no longer needed
 	isStaging, err := strconv.ParseBool(os.Getenv("IS_STAGING"))
 	if err != nil {
@@ -107,6 +114,15 @@ func (s *Server) CronMailer() error {
 	if err != nil {
 		log.Printf("there was an error sending the mail: %v", err)
 	}
+
+	s.cron.AddFunc("0 12 * * *", func() {
+		err := s.GetFourRandomRecipes()
+
+		log.Printf("this is from the cron job")
+		if err != nil {
+			log.Printf("there was an error sending the mail: %v", err)
+		}
+	})
 
 	s.cron.AddFunc("0 15 * * *", func() {
 		err := s.mailer.DialAndSend(emailList...)
