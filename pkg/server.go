@@ -102,37 +102,29 @@ func (s *Server) CronMailer() error {
 		emailList = append(emailList, mail)
 	}
 
-	//usrRecipe := UserRecipe{
-	//	UserName: userList[0].Name,
-	//	Recipes:  dailyRecipes,
-	//}
-	//
-	//var t bytes.Buffer
-	//err = mailTemplate.Execute(&t, usrRecipe)
-	//
-	//mail := gomail.NewMessage()
-	//mail.SetAddressHeader("From", "noreply@mbvistisen.dk", "Morten's recipe service")
-	//mail.SetHeader("To", userList[0].Email)
-	//mail.SetHeader("Subject", "Your daily recipes are here!")
-	//mail.SetBody("text/html", t.String())
-	//
-	//emailList = append(emailList, mail)
-
 	err = s.mailer.DialAndSend(emailList...)
 
-	log.Printf("this is from the cron job err: %v", err)
 	if err != nil {
 		log.Printf("there was an error sending the mail: %v", err)
 	}
 
-	//s.cron.AddFunc("0 16 * * *", func() {
-	//	err := s.mailer.DialAndSend(emailList...)
-	//
-	//	log.Printf("this is from the cron job")
-	//	if err != nil {
-	//		log.Printf("there was an error sending the mail: %v", err)
-	//	}
-	//})
+	s.cron.AddFunc("0 15 * * *", func() {
+		err := s.mailer.DialAndSend(emailList...)
+
+		log.Printf("this is from the cron job")
+		if err != nil {
+			log.Printf("there was an error sending the mail: %v", err)
+		}
+	})
+
+	s.cron.AddFunc("0 16 * * *", func() {
+		err := s.mailer.DialAndSend(emailList...)
+
+		log.Printf("this is from the cron job")
+		if err != nil {
+			log.Printf("there was an error sending the mail: %v", err)
+		}
+	})
 
 	s.cron.Start()
 	return nil
