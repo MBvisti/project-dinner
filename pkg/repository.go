@@ -3,6 +3,7 @@ package app
 import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
+	"log"
 )
 
 type Repository struct {
@@ -17,11 +18,19 @@ type User struct {
 
 type Recipe struct {
 	gorm.Model
-	Name        string `json:"title"`
-	Image       string `json:"image"`
-	Description string `json:"summary"`
-	Source      string `json:"sourceUrl"`
-	Rating      string
+	Name         string `json:"title"`
+	Image        string `json:"image"`
+	Description  string `json:"summary"`
+	Source       string `json:"sourceUrl"`
+	Instructions string `json:"instructions"`
+}
+
+type DailyRecipes struct {
+	gorm.Model
+	Name         string `json:"title"`
+	Image        string `json:"image"`
+	Description  string `json:"summary"`
+	Source       string `json:"sourceUrl"`
 	Instructions string `json:"instructions"`
 }
 
@@ -38,7 +47,7 @@ func NewRepository(db *gorm.DB) *Repository {
 }
 
 func (r *Repository) DestructiveReset() error {
-	err := r.db.DropTableIfExists(&User{}, &Recipe{}).Error
+	err := r.db.DropTableIfExists(&User{}, &Recipe{}, &DailyRecipes{}).Error
 	if err != nil {
 		return err
 	}
@@ -47,7 +56,6 @@ func (r *Repository) DestructiveReset() error {
 	if err != nil {
 		return err
 	}
-
 
 	user := User{
 		Email: "mbv1406@gmail.com",
@@ -63,14 +71,22 @@ func (r *Repository) DestructiveReset() error {
 	return nil
 }
 
-func (r *Repository) CreateRecipe(recipe *Recipe) error {
-	err := r.db.Create(&recipe).Error
+func (r *Repository) CreateRecipe(recipe []Recipe) error {
+	r.db.Exec("DELETE FROM daily_recipes")
+
+	var err error
+	for index, reci := range recipe {
+		log.Printf("this is index: %v", index)
+		err = r.db.Create(&reci).Error
+
+		err = r.db.Table("daily_recipes").Create(&reci).Error
+	}
 
 	return err
 }
 
 func (r *Repository) AutoMigrate() error {
-	if err := r.db.AutoMigrate(&User{}, &Recipe{}).Error; err != nil {
+	if err := r.db.AutoMigrate(&User{}, &Recipe{}, &DailyRecipes{}).Error; err != nil {
 		return err
 	}
 	return nil
@@ -87,16 +103,9 @@ func (r *Repository) GetEmailList() ([]EmailList, error) {
 	return emailList, nil
 }
 
-func (r *Repository) TodaysRecipes() ([]Recipe, error) {
-	var recipes []Recipe
-	var count int
-	err := r.db.Model(&recipes).Count(&count).Error
-	if err != nil {
-		return nil, err
-	}
-
-	var selectedRecipes []Recipe
-	err = r.db.Find(&selectedRecipes, []int{1, 2, 3, 4}).Error
+func (r *Repository) TodaysRecipes() ([]DailyRecipes, error) {
+	var selectedRecipes []DailyRecipes
+	err := r.db.Find(&selectedRecipes, []int{1, 2, 3, 4}).Error
 
 	if err != nil {
 		return nil, err
