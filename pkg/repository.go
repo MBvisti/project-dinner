@@ -105,7 +105,7 @@ func (r *Repository) GetEmailList() ([]EmailList, error) {
 
 func (r *Repository) TodaysRecipes() ([]DailyRecipes, error) {
 	var selectedRecipes []DailyRecipes
-	err := r.db.Find(&selectedRecipes, []int{1, 2, 3, 4}).Error
+	err := r.db.Table("daily_recipes").Find(&selectedRecipes).Error
 
 	if err != nil {
 		return nil, err
