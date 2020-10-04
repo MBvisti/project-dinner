@@ -19,6 +19,7 @@ RUN go mod download
 
 COPY cmd ./cmd
 COPY pkg ./pkg
+COPY template ./template
 
 # TODO: should probably look into using go install here
 RUN GOOS=linux GOARCH=amd64 go build -ldflags "-X main.version=${VERSION} -s -w" -a -o main cmd/server/main.go
@@ -27,5 +28,6 @@ FROM alpine
 # to make the program have time zone data
 RUN apk add --no-cache tzdata
 COPY --from=build-env /app/main /
+COPY --from=build-env /app/template/daily_recipe_email.html /template/
 
 CMD ["./main"]
