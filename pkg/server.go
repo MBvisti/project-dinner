@@ -117,24 +117,6 @@ func (s *Server) CronMailer() error {
 		}
 	})
 
-	s.cron.AddFunc("0 12 * * *", func() {
-		err := s.mailer.DialAndSend(mails...)
-
-		log.Printf("this is from the cron job")
-		if err != nil {
-			log.Printf("there was an error sending the mail: %v", err)
-		}
-	})
-
-	s.cron.AddFunc("0 13 * * *", func() {
-		err := s.mailer.DialAndSend(mails...)
-
-		log.Printf("this is from the cron job")
-		if err != nil {
-			log.Printf("there was an error sending the mail: %v", err)
-		}
-	})
-
 	s.cron.AddFunc("0 16 * * *", func() {
 		err := s.mailer.DialAndSend(emailList...)
 
