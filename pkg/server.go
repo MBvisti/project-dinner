@@ -1,9 +1,11 @@
 package app
 
 import (
+	"bytes"
 	"github.com/gin-gonic/gin"
 	"github.com/robfig/cron/v3"
 	"gopkg.in/gomail.v2"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -15,6 +17,11 @@ type Server struct {
 	router  *gin.Engine
 	cron    *cron.Cron
 	mailer  *gomail.Dialer
+}
+
+type UserRecipe struct {
+	UserName string
+	Recipes  []Recipe
 }
 
 func NewServer(s *Repository, r *gin.Engine, c *cron.Cron, m *gomail.Dialer) Server {
@@ -58,23 +65,74 @@ func (s *Server) Run(addr string) error {
 }
 
 func (s *Server) CronMailer() error {
-	//address := []string{"morten@mbvistisen.dk", "vistisen@live.dk", "mbv1406@gmail.com"}
-	mail := gomail.NewMessage()
-	mail.SetAddressHeader("From", "noreply@mbvistisen.dk", "CronJob")
-	mail.SetHeader("To", "mbv1406@gmail.com")
-	mail.SetHeader("Subject", "test cron job at 4pm")
-	mail.SetBody("text/html", "This is a test email sent everyday at 4pm by the cronjob")
+	mailTemplate, err := template.ParseFiles("../template/daily_recipe_email.html")
+	if err != nil {
+		return err
+	}
 
-	mails := []*gomail.Message{mail}
+	var emailList []*gomail.Message
 
-	s.cron.AddFunc("0 16 * * *", func() {
-		err := s.mailer.DialAndSend(mails...)
+	userList, err := s.storage.GetEmailList()
 
-		log.Printf("this is from the cron job")
-		if err != nil {
-			log.Printf("there was an error sending the mail: %v", err)
+	if err != nil {
+		return err
+	}
+
+	dailyRecipes, err := s.storage.TodaysRecipes()
+
+	if err != nil {
+		return err
+	}
+
+	for _, user := range userList {
+		usrRecipe := UserRecipe{
+			UserName: user.Name,
+			Recipes:  dailyRecipes,
 		}
-	})
+
+		var t bytes.Buffer
+		err = mailTemplate.Execute(&t, usrRecipe)
+
+		mail := gomail.NewMessage()
+		mail.SetAddressHeader("From", "noreply@mbvistisen.dk", "Morten's recipe service")
+		mail.SetHeader("To", user.Email)
+		mail.SetHeader("Subject", "Your daily recipes are here!")
+		mail.SetBody("text/html", t.String())
+
+		emailList = append(emailList, mail)
+	}
+
+	//usrRecipe := UserRecipe{
+	//	UserName: userList[0].Name,
+	//	Recipes:  dailyRecipes,
+	//}
+	//
+	//var t bytes.Buffer
+	//err = mailTemplate.Execute(&t, usrRecipe)
+	//
+	//mail := gomail.NewMessage()
+	//mail.SetAddressHeader("From", "noreply@mbvistisen.dk", "Morten's recipe service")
+	//mail.SetHeader("To", userList[0].Email)
+	//mail.SetHeader("Subject", "Your daily recipes are here!")
+	//mail.SetBody("text/html", t.String())
+	//
+	//emailList = append(emailList, mail)
+
+	err = s.mailer.DialAndSend(emailList...)
+
+	log.Printf("this is from the cron job err: %v", err)
+	if err != nil {
+		log.Printf("there was an error sending the mail: %v", err)
+	}
+
+	//s.cron.AddFunc("0 16 * * *", func() {
+	//	err := s.mailer.DialAndSend(emailList...)
+	//
+	//	log.Printf("this is from the cron job")
+	//	if err != nil {
+	//		log.Printf("there was an error sending the mail: %v", err)
+	//	}
+	//})
 
 	s.cron.Start()
 	return nil
