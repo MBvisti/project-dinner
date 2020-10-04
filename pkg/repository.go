@@ -3,8 +3,6 @@ package app
 import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
-	"log"
-	"math/rand"
 )
 
 type Repository struct {
@@ -137,9 +135,9 @@ func (r *Repository) GetEmailList() ([]EmailList, error) {
 	return emailList, nil
 }
 
-func randInt(min int, max int) int {
-	return min + rand.Intn(max-min)
-}
+//func randInt(min int, max int) int {
+//	return min + rand.Intn(max-min)
+//}
 
 func (r *Repository) TodaysRecipes() ([]Recipe, error) {
 	var recipes []Recipe
@@ -149,10 +147,8 @@ func (r *Repository) TodaysRecipes() ([]Recipe, error) {
 		return nil, err
 	}
 
-	log.Printf("this is the amount err: %v", count)
-
 	var selectedRecipes []Recipe
-	err = r.db.Find(&selectedRecipes, []int{randInt(1, count), randInt(1, count), randInt(1, count), randInt(1, count)}).Error
+	err = r.db.Find(&selectedRecipes, []int{1, 2, 3, 4}).Error
 
 	if err != nil {
 		return nil, err
