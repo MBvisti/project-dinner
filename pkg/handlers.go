@@ -1,7 +1,9 @@
 package app
 
 import (
+	"encoding/json"
 	"github.com/gin-gonic/gin"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -96,7 +98,7 @@ func (s *Server) CreateRecipe() gin.HandlerFunc {
 			return
 		}
 
-		err = s.storage.CreateRecipe(&recipe)
+		//err = s.storage.CreateRecipe(&recipe)
 
 		if err != nil {
 			response := map[string]string{
@@ -115,6 +117,49 @@ func (s *Server) CreateRecipe() gin.HandlerFunc {
 	}
 }
 
+type AllRecipes struct {
+	Recipes []Recipe `json:"recipes"`
+}
+
+func (s *Server) GetFourRandomRecipes() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Header("Content-Type", "application/json")
+
+		resp, err := http.Get("https://api.spoonacular.com/recipes/random?apiKey=5ce66a1c4dc546f2a512059d8df566f7&tags=vegetarian,dinner&number=4")
+
+		if err != nil {
+			response := map[string]string{
+				"status": "failure",
+				"data":   err.Error(),
+			}
+			c.JSON(http.StatusInternalServerError, response)
+		}
+
+		var recipe AllRecipes
+
+		if err := json.NewDecoder(resp.Body).Decode(&recipe); err != nil {
+			response := map[string]string{
+				"status": "failure",
+				"data":   err.Error(),
+			}
+			c.JSON(http.StatusInternalServerError, response)
+		}
+
+		log.Print(recipe)
+		err = s.storage.CreateRecipe(recipe.Recipes)
+
+		if err != nil {
+			log.Printf("there was an error saving the recipe to the database: %v", err)
+		}
+
+		//response := map[string]string{
+		//	"status": "success",
+		//	"data":   "saved the recipes to the database",
+		//}
+		c.JSON(http.StatusOK, recipe.Recipes)
+	}
+}
+
 func (s *Server) WakeDyno() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Header("Content-Type", "application/json")
@@ -124,5 +169,26 @@ func (s *Server) WakeDyno() gin.HandlerFunc {
 			"data":   "dyno is awake again",
 		}
 		c.JSON(http.StatusOK, response)
+	}
+}
+
+func (s *Server) EmailList() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Header("Content-Type", "application/json")
+
+		//users, err := s.storage.GetEmailList()
+
+		recipes, err := s.storage.TodaysRecipes()
+
+		if err != nil {
+			response := map[string]string{
+				"status": "failure",
+				"data":   "couldn't retrive list",
+			}
+			c.JSON(http.StatusInternalServerError, response)
+			return
+		}
+
+		c.JSON(http.StatusOK, recipes)
 	}
 }

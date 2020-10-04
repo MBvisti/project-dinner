@@ -7,6 +7,7 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/robfig/cron/v3"
 	"gopkg.in/gomail.v2"
+	"math/rand"
 	"os"
 	app "project-dinner/pkg"
 	"strconv"
@@ -72,6 +73,9 @@ func run() error {
 	if err != nil {
 		return err
 	}
+
+	// seed random generator used to pick the emails
+	rand.Seed(time.Now().UTC().UnixNano())
 
 	return nil
 }

@@ -3,7 +3,7 @@ PKG := project-dinner/pkg
 PKG_LIST := $(shell go list ${PKG}/...)
 
 # This version-strategy uses a manual value to set the version string
-VERSION := 0.0.6
+VERSION := 0.0.7
 BUILD_ENV := "production"
 APP_NAME_STAGING := project-dinner-staging
 APP_NAME_PRODUCTION := project-dinner-production
@@ -32,7 +32,7 @@ format:
 # Work around for connecting to DB on host when running the app in docker
 dev: vet format
 	@docker build --rm --build-arg VERSION=${VERSION} -t ${REGISTRY}/${OUT}:${VERSION} .
-	@docker run --rm -e DEVELOPMENT_MODE=true -e IS_STAGING=true -e DATABASE_URL="postgres://postgres:postgres@host.docker.internal/bandlokaler_test?sslmode=disable" -p 5000:5000 ${REGISTRY}/${OUT}:${VERSION}
+	@docker run --rm -e DEVELOPMENT_MODE=true -e SEND_GRID_USER=00d529b7247ff7 -e SEND_GRID_API_KEY=84af903e641a55 -e HOST=smtp.mailtrap.io -e MAIL_PORT=25 -e IS_STAGING=true -e DATABASE_URL="postgres://postgres:postgres@host.docker.internal/bandlokaler_test?sslmode=disable" -p 5000:5000 ${REGISTRY}/${OUT}:${VERSION}
 
 test: vet $(BUILD_DIRS)
 	@docker run                                                 	\

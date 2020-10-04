@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h1>Hello {{.UserName}}</h1>
+
+{{ range .Recipes}}
+    <p>Recipe name: {{ .Name }}</p>
+    <img src="{{ .Image}}" />
+        <a href="{{ .Source}}">Go to the recipe</a>
+    <p>Description: {{ .Description }}</p>
+{{/*    <p>Source: {{ .Source }}</p>*/}}
+{{/*    <p>Rating: {{ .Rating }}</p>*/}}
+{{/*    <p>Review: {{ .Review }}</p>*/}}
+{{ end }}
+
+</body>
+</html>
