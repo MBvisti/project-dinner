@@ -21,7 +21,7 @@ type Server struct {
 
 type UserRecipe struct {
 	UserName string
-	Recipes  []Recipe
+	Recipes  []DailyRecipes
 }
 
 func NewServer(s *Repository, r *gin.Engine, c *cron.Cron, m *gomail.Dialer) Server {
