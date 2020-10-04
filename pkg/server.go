@@ -34,6 +34,8 @@ func NewServer(s *Repository, r *gin.Engine, c *cron.Cron, m *gomail.Dialer) Ser
 }
 
 func (s *Server) Run(addr string) error {
+	s.GetFourRandomRecipes()
+
 	// TODO: change this to setup the main cronjob
 	err := s.CronMailer()
 	if err != nil {
@@ -41,7 +43,6 @@ func (s *Server) Run(addr string) error {
 		return err
 	}
 
-	s.GetFourRandomRecipes()
 
 	if err != nil {
 		log.Printf("this is err from cronjob: %v", err)
