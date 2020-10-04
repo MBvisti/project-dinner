@@ -98,7 +98,7 @@ func (s *Server) CreateRecipe() gin.HandlerFunc {
 			return
 		}
 
-		err = s.storage.CreateRecipe(&recipe)
+		//err = s.storage.CreateRecipe(&recipe)
 
 		if err != nil {
 			response := map[string]string{
@@ -117,11 +117,15 @@ func (s *Server) CreateRecipe() gin.HandlerFunc {
 	}
 }
 
+type AllRecipes struct {
+	Recipes []Recipe `json:"recipes"`
+}
+
 func (s *Server) GetFourRandomRecipes() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Header("Content-Type", "application/json")
 
-		resp, err := http.Get("https://api.spoonacular.com/recipes/random?apiKey=5ce66a1c4dc546f2a512059d8df566f7&tags=vegetarian&number=4")
+		resp, err := http.Get("https://api.spoonacular.com/recipes/random?apiKey=5ce66a1c4dc546f2a512059d8df566f7&tags=vegetarian,dinner&number=4")
 
 		if err != nil {
 			response := map[string]string{
@@ -131,9 +135,7 @@ func (s *Server) GetFourRandomRecipes() gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, response)
 		}
 
-		defer resp.Body.Close()
-
-		var recipe []Recipe
+		var recipe AllRecipes
 
 		if err := json.NewDecoder(resp.Body).Decode(&recipe); err != nil {
 			response := map[string]string{
@@ -143,7 +145,18 @@ func (s *Server) GetFourRandomRecipes() gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, response)
 		}
 
-		log.Printf("This is the returned data from the request: %v", recipe)
+		log.Print(recipe)
+		err = s.storage.CreateRecipe(recipe.Recipes)
+
+		if err != nil {
+			log.Printf("there was an error saving the recipe to the database: %v", err)
+		}
+
+		//response := map[string]string{
+		//	"status": "success",
+		//	"data":   "saved the recipes to the database",
+		//}
+		c.JSON(http.StatusOK, recipe.Recipes)
 	}
 }
 
