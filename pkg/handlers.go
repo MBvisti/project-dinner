@@ -1,7 +1,9 @@
 package app
 
 import (
+	"encoding/json"
 	"github.com/gin-gonic/gin"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -112,6 +114,36 @@ func (s *Server) CreateRecipe() gin.HandlerFunc {
 			"data":   "recipe created",
 		}
 		c.JSON(http.StatusOK, response)
+	}
+}
+
+func (s *Server) GetFourRandomRecipes() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Header("Content-Type", "application/json")
+
+		resp, err := http.Get("https://api.spoonacular.com/recipes/random?apiKey=5ce66a1c4dc546f2a512059d8df566f7&tags=vegetarian&number=4")
+
+		if err != nil {
+			response := map[string]string{
+				"status": "failure",
+				"data":   err.Error(),
+			}
+			c.JSON(http.StatusInternalServerError, response)
+		}
+
+		defer resp.Body.Close()
+
+		var recipe []Recipe
+
+		if err := json.NewDecoder(resp.Body).Decode(&recipe); err != nil {
+			response := map[string]string{
+				"status": "failure",
+				"data":   err.Error(),
+			}
+			c.JSON(http.StatusInternalServerError, response)
+		}
+
+		log.Printf("This is the returned data from the request: %v", recipe)
 	}
 }
 
