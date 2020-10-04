@@ -43,7 +43,6 @@ func (s *Server) Run(addr string) error {
 		return err
 	}
 
-
 	if err != nil {
 		log.Printf("this is err from cronjob: %v", err)
 		return err
