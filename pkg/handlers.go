@@ -1,8 +1,11 @@
 package app
 
 import (
+	"bytes"
 	"encoding/json"
 	"github.com/gin-gonic/gin"
+	"gopkg.in/gomail.v2"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -190,5 +193,54 @@ func (s *Server) EmailList() gin.HandlerFunc {
 		}
 
 		c.JSON(http.StatusOK, recipes)
+	}
+}
+
+func (s *Server) SendMails() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		mailTemplate, err := template.ParseFiles("../template/daily_recipe_email.html")
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"err": err.Error()})
+		}
+
+		var emailList []*gomail.Message
+
+		userList, err := s.storage.GetEmailList()
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"err": err.Error()})
+		}
+
+		dailyRecipes, err := s.storage.TodaysRecipes()
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"err": err.Error()})
+		}
+
+		for _, user := range userList {
+			usrRecipe := UserRecipe{
+				UserName: user.Name,
+				Recipes:  dailyRecipes,
+			}
+
+			var t bytes.Buffer
+			err = mailTemplate.Execute(&t, usrRecipe)
+
+			mail := gomail.NewMessage()
+			mail.SetAddressHeader("From", "noreply@mbvistisen.dk", "Morten's recipe service")
+			mail.SetHeader("To", user.Email)
+			mail.SetHeader("Subject", "Your daily recipes are here!")
+			mail.SetBody("text/html", t.String())
+
+			emailList = append(emailList, mail)
+		}
+
+		err = s.mailer.DialAndSend(emailList...)
+
+		if err != nil {
+			log.Printf("there was an error sending the mail: %v", err)
+		}
+
+		c.JSON(http.StatusOK, "")
 	}
 }
