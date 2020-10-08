@@ -3,7 +3,7 @@ PKG := project-dinner/pkg
 PKG_LIST := $(shell go list ${PKG}/...)
 
 # This version-strategy uses a manual value to set the version string
-VERSION := 0.0.10
+VERSION := 0.0.11
 BUILD_ENV := "production"
 APP_NAME_STAGING := project-dinner-staging
 APP_NAME_PRODUCTION := project-dinner-production
@@ -59,13 +59,13 @@ push-docker-hub:
 container: vet format test
 	@docker build --rm --build-arg VERSION=${VERSION} -t ${REGISTRY}/${OUT}:${VERSION} .
 
-push-heroku-stag: container bin-clean
+deploy-stag: container bin-clean
 	@docker tag ${REGISTRY}/${OUT}:${VERSION} registry.heroku.com/${APP_NAME_STAGING}/web
 	@docker push registry.heroku.com/${APP_NAME_STAGING}/web
 	heroku container:release web -a ${APP_NAME_STAGING}
 	docker rmi registry.heroku.com/${APP_NAME_STAGING}/web
 
-push-heroku-prod: bin-clean
+deploy-prod: bin-clean
 	@docker tag ${REGISTRY}/${OUT}:${VERSION} registry.heroku.com/${APP_NAME_PRODUCTION}/web
 	@docker push registry.heroku.com/${APP_NAME_PRODUCTION}/web
 	heroku container:release web -a ${APP_NAME_PRODUCTION}
