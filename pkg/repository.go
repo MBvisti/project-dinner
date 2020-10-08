@@ -3,6 +3,7 @@ package app
 import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
+	"html/template"
 	"log"
 )
 
@@ -27,11 +28,11 @@ type Recipe struct {
 
 type DailyRecipes struct {
 	gorm.Model
-	Name         string `json:"title"`
-	Image        string `json:"image"`
-	Description  string `json:"summary"`
-	Source       string `json:"sourceUrl"`
-	Instructions string `json:"instructions"`
+	Name         string        `json:"title"`
+	Image        string        `json:"image"`
+	Description  template.HTML `json:"summary"`
+	Source       string        `json:"sourceUrl"`
+	Instructions string        `json:"instructions"`
 }
 
 type EmailList struct {

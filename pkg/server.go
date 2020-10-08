@@ -90,6 +90,7 @@ func (s *Server) GetDailyRecipes() error {
 
 func (s *Server) CronMailer() error {
 	mailTemplate, err := template.ParseFiles("../template/daily_recipe_email.html")
+
 	if err != nil {
 		return err
 	}
