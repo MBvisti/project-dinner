@@ -2,6 +2,7 @@ package app
 
 import (
 	"bytes"
+	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"github.com/robfig/cron/v3"
 	"gopkg.in/gomail.v2"
@@ -36,6 +37,7 @@ func NewServer(s *Repository, r *gin.Engine, c *cron.Cron, m *gomail.Dialer) Ser
 func (s *Server) Run(addr string) error {
 	// TODO: change this to setup the main cronjob
 	err := s.CronMailer()
+
 	if err != nil {
 		log.Printf("this is err from cronjob: %v", err)
 		return err
@@ -56,6 +58,28 @@ func (s *Server) Run(addr string) error {
 
 	log.Printf("Starting the server on: %v", addr)
 	err = http.ListenAndServe(addr, s.routes())
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *Server) GetDailyRecipes() error {
+	resp, err := http.Get("https://api.spoonacular.com/recipes/random?apiKey=5ce66a1c4dc546f2a512059d8df566f7&tags=vegetarian,dinner&number=4")
+
+	if err != nil {
+		return err
+	}
+
+	var recipe AllRecipes
+
+	if err := json.NewDecoder(resp.Body).Decode(&recipe); err != nil {
+		return err
+	}
+
+	err = s.storage.CreateRecipe(recipe.Recipes)
 
 	if err != nil {
 		return err
@@ -102,27 +126,20 @@ func (s *Server) CronMailer() error {
 		emailList = append(emailList, mail)
 	}
 
-	err = s.mailer.DialAndSend(emailList...)
+	s.cron.AddFunc("0 12 * * *", func() {
+		err := s.GetDailyRecipes()
 
-	if err != nil {
-		log.Printf("there was an error sending the mail: %v", err)
-	}
-
-	s.cron.AddFunc("0 15 * * *", func() {
-		err := s.mailer.DialAndSend(emailList...)
-
-		log.Printf("this is from the cron job")
 		if err != nil {
-			log.Printf("there was an error sending the mail: %v", err)
+			log.Printf("there was an error getting recipes: %v", err.Error())
 		}
 	})
 
-	s.cron.AddFunc("0 16 * * *", func() {
+	s.cron.AddFunc("0 13 * * *", func() {
 		err := s.mailer.DialAndSend(emailList...)
 
 		log.Printf("this is from the cron job")
 		if err != nil {
-			log.Printf("there was an error sending the mail: %v", err)
+			log.Printf("there was an error sending the mail: %v", err.Error())
 		}
 	})
 
