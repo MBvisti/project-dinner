@@ -35,8 +35,6 @@ func NewServer(s *Repository, r *gin.Engine, c *cron.Cron, m *gomail.Dialer) Ser
 }
 
 func (s *Server) Run(addr string) error {
-	s.GetFourRandomRecipes()
-
 	// TODO: change this to setup the main cronjob
 	err := s.CronMailer()
 	if err != nil {
@@ -132,31 +130,7 @@ func (s *Server) CronMailer() error {
 		emailList = append(emailList, mail)
 	}
 
-	err = s.mailer.DialAndSend(emailList...)
-
-	if err != nil {
-		log.Printf("there was an error sending the mail: %v", err.Error())
-	}
-
-	s.cron.AddFunc("0 12 * * *", func() {
-		err := s.GetFourRandomRecipes()
-
-		log.Printf("this is from the cron job")
-		if err != nil {
-			log.Printf("there was an error sending the mail: %v", err)
-		}
-	})
-
 	s.cron.AddFunc("0 13 * * *", func() {
-		err := s.mailer.DialAndSend(emailList...)
-
-		log.Printf("this is from the cron job")
-		if err != nil {
-			log.Printf("there was an error sending the mail: %v", err.Error())
-		}
-	})
-
-	s.cron.AddFunc("0 16 * * *", func() {
 		err := s.mailer.DialAndSend(emailList...)
 
 		log.Printf("this is from the cron job")
