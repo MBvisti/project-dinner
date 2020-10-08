@@ -66,7 +66,7 @@ func (s *Server) Run(addr string) error {
 	return nil
 }
 
-func (s *Server) GetInitialRecipes() error {
+func (s *Server) GetDailyRecipes() error {
 	resp, err := http.Get("https://api.spoonacular.com/recipes/random?apiKey=5ce66a1c4dc546f2a512059d8df566f7&tags=vegetarian,dinner&number=4")
 
 	if err != nil {
@@ -125,6 +125,14 @@ func (s *Server) CronMailer() error {
 
 		emailList = append(emailList, mail)
 	}
+
+	s.cron.AddFunc("0 12 * * *", func() {
+		err := s.GetDailyRecipes()
+
+		if err != nil {
+			log.Printf("there was an error getting recipes: %v", err.Error())
+		}
+	})
 
 	s.cron.AddFunc("0 13 * * *", func() {
 		err := s.mailer.DialAndSend(emailList...)
