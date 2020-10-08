@@ -58,12 +58,24 @@ func (r *Repository) DestructiveReset() error {
 		return err
 	}
 
-	user := User{
+	morten := User{
 		Email: "mbv1406@gmail.com",
 		Name:  "Morten",
 	}
 
-	err = r.db.Create(&user).Error
+	err = r.db.Create(&morten).Error
+
+	if err != nil {
+		return err
+	}
+
+
+	javiera := User{
+		Email: "j.camuslaso@gmail.com",
+		Name:  "Javiera",
+	}
+
+	err = r.db.Create(&javiera).Error
 
 	if err != nil {
 		return err
