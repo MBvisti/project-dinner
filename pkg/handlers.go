@@ -155,10 +155,6 @@ func (s *Server) GetFourRandomRecipes() gin.HandlerFunc {
 			log.Printf("there was an error saving the recipe to the database: %v", err)
 		}
 
-		//response := map[string]string{
-		//	"status": "success",
-		//	"data":   "saved the recipes to the database",
-		//}
 		c.JSON(http.StatusOK, recipe.Recipes)
 	}
 }
