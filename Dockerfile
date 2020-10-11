@@ -1,5 +1,5 @@
 # Build stage
-FROM golang:1.15-alpine AS build-env
+FROM golang:1.11.2-stretch AS build-env
 
 ENV GO111MODULE=on
 ENV CGO_ENABLED=0
@@ -30,4 +30,7 @@ RUN apk add --no-cache tzdata
 COPY --from=build-env /app/main /
 COPY --from=build-env /app/template/daily_recipe_email.html /template/
 
-CMD ["./main"]
+RUN go get github.com/cespare/reflex
+COPY reflex.conf /
+ENTRYPOINT ["reflex", "-c", "/reflex.conf"]
+#CMD ["./main"]
