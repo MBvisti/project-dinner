@@ -12,6 +12,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"reflect"
 	"strconv"
 )
 
@@ -156,25 +157,37 @@ func (s *Server) Crawler(url string) (interface{}, error) {
 	var crawlerResult map[string]interface{}
 
 	crawler.OnHTML("script[type='application/ld+json']", func(e *colly.HTMLElement) {
-		
+		err := json.Unmarshal([]byte(e.Text), &crawlerResult)
+
+		if err != nil {
+			log.Printf("this is from the crawler error: %v", err.Error())
+		}
 	})
 
 	err := crawler.Visit(url)
 
 	if err != nil {
-		log.Printf("this is from the crawler error: %v", err)
+		log.Printf("this is from the crawler visit error: %v", err)
 		return "", err
 	}
 
 	proc := ld.NewJsonLdProcessor()
 	options := ld.NewJsonLdOptions("")
 
-	expandedDoc, err := proc.Expand(crawlerResult, options)
+	//context := map[string]interface{}{
+	//	"@context": "https://schema.org",
+	//}
+
+	log.Printf("this is crawlerResult: %v", crawlerResult)
+	log.Println(reflect.TypeOf(crawlerResult))
+	flattenDoc, err := proc.Expand(crawlerResult["@graph"], options)
 
 	if err != nil {
 		log.Printf("this is from the crawler error: %v", err)
 		return "", err
 	}
 
-	return expandedDoc, nil
+	log.Printf("this is the processed doc: %v", flattenDoc)
+
+	return flattenDoc, nil
 }

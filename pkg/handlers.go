@@ -249,6 +249,7 @@ func (s *Server) CrawlSite() gin.HandlerFunc {
 
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, err)
+			return
 		}
 
 		response := map[string]interface{}{
