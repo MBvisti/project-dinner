@@ -240,3 +240,22 @@ func (s *Server) SendMails() gin.HandlerFunc {
 		c.JSON(http.StatusOK, "")
 	}
 }
+
+func (s *Server) CrawlSite() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Header("Content-Type", "application/json")
+
+		result, err := s.Crawler("https://thecleaneatingcouple.com/healthy-orange-chicken/")
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, err)
+		}
+
+		response := map[string]interface{}{
+			"status":   "success",
+			"response": "site successfully crawled",
+			"data":     result,
+		}
+		c.JSON(http.StatusOK, response)
+	}
+}

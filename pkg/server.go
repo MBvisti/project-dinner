@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"github.com/gin-gonic/gin"
+	"github.com/gocolly/colly/v2"
+	"github.com/piprate/json-gold/ld"
 	"github.com/robfig/cron/v3"
 	"gopkg.in/gomail.v2"
 	"html/template"
@@ -146,4 +148,33 @@ func (s *Server) CronMailer() error {
 
 	s.cron.Start()
 	return nil
+}
+
+func (s *Server) Crawler(url string) (interface{}, error) {
+	log.Printf("crawling this url: %v", url)
+	crawler := colly.NewCollector()
+	var crawlerResult map[string]interface{}
+
+	crawler.OnHTML("script[type='application/ld+json']", func(e *colly.HTMLElement) {
+		
+	})
+
+	err := crawler.Visit(url)
+
+	if err != nil {
+		log.Printf("this is from the crawler error: %v", err)
+		return "", err
+	}
+
+	proc := ld.NewJsonLdProcessor()
+	options := ld.NewJsonLdOptions("")
+
+	expandedDoc, err := proc.Expand(crawlerResult, options)
+
+	if err != nil {
+		log.Printf("this is from the crawler error: %v", err)
+		return "", err
+	}
+
+	return expandedDoc, nil
 }

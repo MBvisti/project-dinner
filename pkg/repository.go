@@ -69,7 +69,6 @@ func (r *Repository) DestructiveReset() error {
 		return err
 	}
 
-
 	javiera := User{
 		Email: "j.camuslaso@gmail.com",
 		Name:  "Javiera",
