@@ -5,14 +5,12 @@ import (
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"github.com/gocolly/colly/v2"
-	"github.com/piprate/json-gold/ld"
 	"github.com/robfig/cron/v3"
 	"gopkg.in/gomail.v2"
 	"html/template"
 	"log"
 	"net/http"
 	"os"
-	"reflect"
 	"strconv"
 )
 
@@ -151,10 +149,28 @@ func (s *Server) CronMailer() error {
 	return nil
 }
 
+type Section struct {
+	Type              string        `json:"@type"`
+	ID                string        `json:"@id"`
+	AggregatedRating  RatingSection `json:"aggregateRating"`
+	Description       string        `json:"description"`
+	RecipeIngredients []string      `json:"recipeIngredient"`
+	//RecipeIngredientsTwo []map[string]string `json:"recipeIngredient"`
+}
+
+type RatingSection struct {
+	RatingCount string `json:"ratingCount"`
+	RatingValue string `json:"ratingValue"`
+}
+
+type RecipeIngredient struct {
+	Ingredient string
+}
+
 func (s *Server) Crawler(url string) (interface{}, error) {
 	log.Printf("crawling this url: %v", url)
 	crawler := colly.NewCollector()
-	var crawlerResult map[string]interface{}
+	var crawlerResult map[string]json.RawMessage
 
 	crawler.OnHTML("script[type='application/ld+json']", func(e *colly.HTMLElement) {
 		err := json.Unmarshal([]byte(e.Text), &crawlerResult)
@@ -171,23 +187,43 @@ func (s *Server) Crawler(url string) (interface{}, error) {
 		return "", err
 	}
 
-	proc := ld.NewJsonLdProcessor()
-	options := ld.NewJsonLdOptions("")
+	//log.Printf("this is the conversion test: %v", string(crawlerResult["@graph"]))
 
-	//context := map[string]interface{}{
-	//	"@context": "https://schema.org",
-	//}
+	//log.Printf("this is crawlerResult[@graph]: %v", crawlerResult["@graph"])
 
-	log.Printf("this is crawlerResult: %v", crawlerResult)
-	log.Println(reflect.TypeOf(crawlerResult))
-	flattenDoc, err := proc.Expand(crawlerResult["@graph"], options)
+	var TestStruct []map[string]interface{}
+	err = json.Unmarshal(crawlerResult["@graph"], &TestStruct)
 
 	if err != nil {
-		log.Printf("this is from the crawler error: %v", err)
-		return "", err
+		log.Printf("unmarshalling error one: %v", err)
 	}
 
-	log.Printf("this is the processed doc: %v", flattenDoc)
+	var AllSections []Section
+	err = json.Unmarshal(crawlerResult["@graph"], &AllSections)
 
-	return flattenDoc, nil
+	if err != nil {
+		log.Printf("unmarshalling error two: %v", err)
+	}
+
+	log.Printf("this is AllSections: %v", AllSections)
+
+	//for _, element := range TestStruct {
+	//	for _, elementInner := range element {
+	//		//log.Printf("all inner elements: %v", elementInner)
+	//		if elementInner == "Recipe" {
+	//			log.Printf("This is the inner element: %v", elementInner)
+	//			log.Printf("this is the wanted element: %v", element)
+	//		}
+	//	}
+	//}
+
+	//log.Printf("this is the test struct: %v", TestStruct)
+
+	//log.Printf("this is the whole object: %v", crawlerResult)
+
+	//for _, element := range crawlerResult["@graph"] {
+	//	log.Printf("this is the element: %v", element)
+	//}
+
+	return TestStruct, nil
 }
