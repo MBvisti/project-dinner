@@ -3,15 +3,16 @@ package app
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/gin-gonic/gin"
-	"github.com/gocolly/colly/v2"
-	"github.com/robfig/cron/v3"
-	"gopkg.in/gomail.v2"
 	"html/template"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
+	"github.com/gocolly/colly/v2"
+	"github.com/robfig/cron/v3"
+	"gopkg.in/gomail.v2"
 )
 
 type Server struct {
@@ -37,12 +38,12 @@ func NewServer(s *Repository, r *gin.Engine, c *cron.Cron, m *gomail.Dialer) Ser
 
 func (s *Server) Run(addr string) error {
 	// TODO: change this to setup the main cronjob
-	err := s.CronMailer()
+	// err := s.CronMailer()
 
-	if err != nil {
-		log.Printf("this is err from cronjob: %v", err)
-		return err
-	}
+	// if err != nil {
+	// 	log.Printf("this is err from cronjob: %v", err)
+	// 	return err
+	// }
 
 	// TODO: change this when no longer needed
 	isStaging, err := strconv.ParseBool(os.Getenv("IS_STAGING"))
@@ -198,8 +199,11 @@ func (s *Server) Crawler(url string) (interface{}, error) {
 		log.Printf("unmarshalling error one: %v", err)
 	}
 
-	var AllSections []Section
-	err = json.Unmarshal(crawlerResult["@graph"], &AllSections)
+	var AllSections Section
+	for _, section := range crawlerResult["@graph"] {
+		log.Printf("this is the all sections loop value: %v", section)
+		err = json.Unmarshal([]byte(string(section)), &AllSections)
+	}
 
 	if err != nil {
 		log.Printf("unmarshalling error two: %v", err)
@@ -225,5 +229,5 @@ func (s *Server) Crawler(url string) (interface{}, error) {
 	//	log.Printf("this is the element: %v", element)
 	//}
 
-	return TestStruct, nil
+	return AllSections, nil
 }
