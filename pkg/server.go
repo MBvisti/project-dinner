@@ -3,14 +3,15 @@ package app
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/gin-gonic/gin"
-	"github.com/robfig/cron/v3"
-	"gopkg.in/gomail.v2"
 	"html/template"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
+	"github.com/robfig/cron/v3"
+	"gopkg.in/gomail.v2"
 )
 
 type Server struct {
@@ -36,12 +37,12 @@ func NewServer(s *Repository, r *gin.Engine, c *cron.Cron, m *gomail.Dialer) Ser
 
 func (s *Server) Run(addr string) error {
 	// TODO: change this to setup the main cronjob
-	err := s.CronMailer()
+	// err := s.CronMailer()
 
-	if err != nil {
-		log.Printf("this is err from cronjob: %v", err)
-		return err
-	}
+	// if err != nil {
+	// 	log.Printf("this is err from cronjob: %v", err)
+	// 	return err
+	// }
 
 	// TODO: change this when no longer needed
 	isStaging, err := strconv.ParseBool(os.Getenv("IS_STAGING"))

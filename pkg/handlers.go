@@ -3,13 +3,14 @@ package app
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/gin-gonic/gin"
-	"gopkg.in/gomail.v2"
 	"html/template"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
+	"gopkg.in/gomail.v2"
 )
 
 func (s *Server) ApiStatus() gin.HandlerFunc {
@@ -18,7 +19,7 @@ func (s *Server) ApiStatus() gin.HandlerFunc {
 
 		response := map[string]string{
 			"status": "success",
-			"data":   "project dinner api running smootly",
+			"data":   "project dinner api running extra smootly",
 		}
 
 		c.JSON(http.StatusOK, response)

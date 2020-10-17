@@ -1,6 +1,6 @@
 module project-dinner
 
-go 1.15
+go 1.14
 
 require (
 	github.com/gin-contrib/cors v1.3.1

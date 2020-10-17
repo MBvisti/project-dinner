@@ -1,0 +1,2 @@
+# Ignore these filename extensions or directories.
+exclude_dir = [".git", "tmp"]

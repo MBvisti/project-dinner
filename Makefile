@@ -29,6 +29,12 @@ vet:
 format:
 	@go fmt ./...
 
+air:
+	docker run -it --rm \
+    -w "/go/src/github.com/cosmtrek/hub" \
+    -v $(pwd):/go/src/github.com/cosmtrek/hub \
+    -p 5000:5000 \
+    ${REGISTRY}/${OUT}:${VERSION}
 # Work around for connecting to DB on host when running the app in docker
 dev: vet format
 	@docker build --rm --build-arg VERSION=${VERSION} -t ${REGISTRY}/${OUT}:${VERSION} .
