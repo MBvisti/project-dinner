@@ -3,13 +3,14 @@ package app
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/gin-gonic/gin"
-	"gopkg.in/gomail.v2"
 	"html/template"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
+	"gopkg.in/gomail.v2"
 )
 
 func (s *Server) ApiStatus() gin.HandlerFunc {
@@ -18,7 +19,7 @@ func (s *Server) ApiStatus() gin.HandlerFunc {
 
 		response := map[string]string{
 			"status": "success",
-			"data":   "project dinner api running smootly",
+			"data":   "project dinner api running super smootly",
 		}
 
 		c.JSON(http.StatusOK, response)
@@ -149,7 +150,7 @@ func (s *Server) GetFourRandomRecipes() gin.HandlerFunc {
 		}
 
 		log.Print(recipe)
-		err = s.storage.CreateRecipe(recipe.Recipes)
+		// err = s.storage.CreateRecipe(recipe.Recipes)
 
 		if err != nil {
 			log.Printf("there was an error saving the recipe to the database: %v", err)
@@ -194,7 +195,7 @@ func (s *Server) EmailList() gin.HandlerFunc {
 
 func (s *Server) SendMails() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		mailTemplate, err := template.ParseFiles("../template/daily_recipe_email.html")
+		mailTemplate, err := template.ParseFiles("./template/daily_recipe_email.html")
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"err": err.Error()})
 		}
@@ -245,17 +246,27 @@ func (s *Server) CrawlSite() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Header("Content-Type", "application/json")
 
-		result, err := s.Crawler("https://thecleaneatingcouple.com/healthy-orange-chicken/")
+		links := s.CrawlUrls()
 
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, err)
-			return
+		log.Printf("this is the link list : %v", links)
+
+		for _, link := range links {
+			res, err := s.Crawler(link)
+			if err != nil {
+				log.Printf("this is the crawler error: %v", err.Error())
+				continue
+			}
+
+			err = s.storage.CreateRecipe(res)
+			if err != nil {
+				log.Printf("this is the storage error: %v", err.Error())
+				continue
+			}
 		}
 
 		response := map[string]interface{}{
 			"status":   "success",
 			"response": "site successfully crawled",
-			"data":     result,
 		}
 		c.JSON(http.StatusOK, response)
 	}

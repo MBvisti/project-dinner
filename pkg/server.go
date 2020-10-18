@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gocolly/colly/v2"
@@ -81,7 +82,7 @@ func (s *Server) GetDailyRecipes() error {
 		return err
 	}
 
-	err = s.storage.CreateRecipe(recipe.Recipes)
+	// err = s.storage.CreateRecipe(recipe.Recipes)
 
 	if err != nil {
 		return err
@@ -150,31 +151,71 @@ func (s *Server) CronMailer() error {
 	return nil
 }
 
-type Section struct {
-	Type              string        `json:"@type"`
-	ID                string        `json:"@id"`
-	AggregatedRating  RatingSection `json:"aggregateRating"`
-	Description       string        `json:"description"`
-	RecipeIngredients []string      `json:"recipeIngredient"`
-	//RecipeIngredientsTwo []map[string]string `json:"recipeIngredient"`
+type Base struct {
+	Context string                 `json:"@context"`
+	Graph   []ScrapedRecipeSection `json:"@graph"`
 }
 
-type RatingSection struct {
+type ScrapedRecipeSection struct {
+	Type               string                      `json:"@type"`
+	ID                 string                      `json:"@id"`
+	AggregatedRating   ScrapedRatingSection        `json:"aggregateRating"`
+	Description        string                      `json:"description"`
+	RecipeIngredients  []string                    `json:"recipeIngredient"`
+	Image              []string                    `json:"image"`
+	Nutrition          map[string]string           `json:"nutrition"`
+	Keywords           string                      `json:"keywords"`
+	RecipeCategory     []string                    `json:"recipeCategory"`
+	RecipeCuisine      []string                    `json:"recipeCuisine"`
+	RecipeInstructions []ScrapedRecipeInstructions `json:"recipeInstructions"`
+	RecipeYield        []string                    `json:"recipeYield"`
+}
+
+type ScrapedRecipeInstructions struct {
+	Type            string              `json:"@type"`
+	Name            string              `json:"name,omitempty"`
+	URL             string              `json:"url,omitempty"`
+	Text            string              `json:"text,omitempty"`
+	ItemListElement []map[string]string `json:"itemListElement,omitempty"`
+}
+
+type ScrapedRatingSection struct {
 	RatingCount string `json:"ratingCount"`
 	RatingValue string `json:"ratingValue"`
 }
 
-type RecipeIngredient struct {
-	Ingredient string
+func (s *Server) CrawlUrls() []string {
+	crawler := colly.NewCollector()
+
+	crawler.Limit(&colly.LimitRule{
+		DomainGlob: "https://thecleaneatingcouple.com/*",
+		Delay:      4 * time.Second,
+	})
+	var linkList []string
+
+	crawler.OnHTML("a[class='entry-image-link']", func(e *colly.HTMLElement) {
+		link := e.Attr("href")
+
+		linkList = append(linkList, link)
+	})
+
+	crawler.Visit("https://thecleaneatingcouple.com/category/recipes/lunch-dinner/")
+
+	return linkList
 }
 
-func (s *Server) Crawler(url string) (interface{}, error) {
-	log.Printf("crawling this url: %v", url)
+func (s *Server) Crawler(url string) (*ScrapedRecipeSection, error) {
 	crawler := colly.NewCollector()
-	var crawlerResult map[string]json.RawMessage
+	crawler.Limit(&colly.LimitRule{
+		DomainGlob: "https://thecleaneatingcouple.com/*",
+		Delay:      2 * time.Second,
+	})
+	var crawlerResult Base
+	var WholeBody map[string]interface{}
 
 	crawler.OnHTML("script[type='application/ld+json']", func(e *colly.HTMLElement) {
-		err := json.Unmarshal([]byte(e.Text), &crawlerResult)
+		err := json.Unmarshal([]byte(e.Text), &WholeBody)
+		json.Unmarshal([]byte(e.Text), &crawlerResult)
 
 		if err != nil {
 			log.Printf("this is from the crawler error: %v", err.Error())
@@ -185,49 +226,20 @@ func (s *Server) Crawler(url string) (interface{}, error) {
 
 	if err != nil {
 		log.Printf("this is from the crawler visit error: %v", err)
-		return "", err
+		return nil, err
 	}
 
-	//log.Printf("this is the conversion test: %v", string(crawlerResult["@graph"]))
+	var ScapedRecipe ScrapedRecipeSection
 
-	//log.Printf("this is crawlerResult[@graph]: %v", crawlerResult["@graph"])
+	for _, section := range crawlerResult.Graph {
+		if section.Type != "Recipe" {
+			continue
+		}
 
-	var TestStruct []map[string]interface{}
-	err = json.Unmarshal(crawlerResult["@graph"], &TestStruct)
+		log.Printf("this is section: %v", section)
 
-	if err != nil {
-		log.Printf("unmarshalling error one: %v", err)
+		ScapedRecipe = section
 	}
 
-	var AllSections Section
-	for _, section := range crawlerResult["@graph"] {
-		log.Printf("this is the all sections loop value: %v", section)
-		err = json.Unmarshal([]byte(string(section)), &AllSections)
-	}
-
-	if err != nil {
-		log.Printf("unmarshalling error two: %v", err)
-	}
-
-	log.Printf("this is AllSections: %v", AllSections)
-
-	//for _, element := range TestStruct {
-	//	for _, elementInner := range element {
-	//		//log.Printf("all inner elements: %v", elementInner)
-	//		if elementInner == "Recipe" {
-	//			log.Printf("This is the inner element: %v", elementInner)
-	//			log.Printf("this is the wanted element: %v", element)
-	//		}
-	//	}
-	//}
-
-	//log.Printf("this is the test struct: %v", TestStruct)
-
-	//log.Printf("this is the whole object: %v", crawlerResult)
-
-	//for _, element := range crawlerResult["@graph"] {
-	//	log.Printf("this is the element: %v", element)
-	//}
-
-	return AllSections, nil
+	return &ScapedRecipe, nil
 }

@@ -1,10 +1,10 @@
 package app
 
 import (
+	"html/template"
+
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
-	"html/template"
-	"log"
 )
 
 type Repository struct {
@@ -17,13 +17,54 @@ type User struct {
 	Name  string
 }
 
+// Recipe ...
 type Recipe struct {
 	gorm.Model
-	Name         string `json:"title"`
-	Image        string `json:"image"`
-	Description  string `json:"summary"`
-	Source       string `json:"sourceUrl"`
-	Instructions string `json:"instructions"`
+	Type           string
+	Description    string
+	RecipeCategory string
+	RecipeCuisine  string
+	RecipeYield    string
+}
+
+type RecipeIngredient struct {
+	gorm.Model
+	Ingredient string
+	RecipeID   uint
+	Recipe     Recipe
+}
+
+type RecipeKeyword struct {
+	gorm.Model
+	Keyword  string
+	RecipeID uint
+	Recipe   Recipe
+}
+
+type RecipeImage struct {
+	gorm.Model
+	Image    string
+	RecipeID uint
+	Recipe   Recipe
+}
+
+type RecipeInstruction struct {
+	gorm.Model
+	Type     string
+	Name     string
+	URL      string
+	Text     string
+	RecipeID uint
+	Recipe   Recipe
+	// ItemListElement map[string]string
+}
+
+type RatingSection struct {
+	gorm.Model
+	RatingCount string
+	RatingValue string
+	RecipeID    uint
+	Recipe      Recipe
 }
 
 type DailyRecipes struct {
@@ -48,7 +89,8 @@ func NewRepository(db *gorm.DB) *Repository {
 }
 
 func (r *Repository) DestructiveReset() error {
-	err := r.db.DropTableIfExists(&User{}, &Recipe{}, &DailyRecipes{}).Error
+	err := r.db.DropTableIfExists(&User{}, &RecipeInstruction{},
+		&RatingSection{}, &RecipeIngredient{}, &RecipeKeyword{}, &RecipeImage{}, &Recipe{}, &DailyRecipes{}).Error
 	if err != nil {
 		return err
 	}
@@ -83,22 +125,89 @@ func (r *Repository) DestructiveReset() error {
 	return nil
 }
 
-func (r *Repository) CreateRecipe(recipe []Recipe) error {
-	r.db.Exec("DELETE FROM daily_recipes")
+func (r *Repository) CreateRecipe(scrapedRecipe *ScrapedRecipeSection) error {
 
-	var err error
-	for index, reci := range recipe {
-		log.Printf("this is index: %v", index)
-		err = r.db.Create(&reci).Error
+	newRecipe := Recipe{
+		Description: scrapedRecipe.Description,
+		// RecipeCategory: scrapedRecipe.RecipeCategory[0],
+		// RecipeCuisine: scrapedRecipe.RecipeCuisine[0],
+		// RecipeYield:   scrapedRecipe.RecipeYield[0],
+		Type: scrapedRecipe.Type,
+	}
 
-		err = r.db.Table("daily_recipes").Create(&reci).Error
+	err := r.db.Table("recipes").Create(&newRecipe).Error
+
+	if err != nil {
+		return err
+	}
+
+	for _, image := range scrapedRecipe.Image {
+		newImage := RecipeImage{
+			Image:    image,
+			RecipeID: newRecipe.ID,
+		}
+		err = r.db.Table("recipe_images").Create(&newImage).Error
+
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, instruction := range scrapedRecipe.RecipeInstructions {
+		newInstruction := RecipeInstruction{
+			Type:     instruction.Type,
+			Name:     instruction.Name,
+			URL:      instruction.URL,
+			Text:     instruction.Text,
+			RecipeID: newRecipe.ID,
+		}
+		err = r.db.Table("recipe_instructions").Create(&newInstruction).Error
+
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, ingredient := range scrapedRecipe.RecipeIngredients {
+		newIngredient := RecipeIngredient{
+			Ingredient: ingredient,
+			RecipeID:   newRecipe.ID,
+		}
+		err = r.db.Table("recipe_ingredients").Create(&newIngredient).Error
+
+		if err != nil {
+			return err
+		}
+	}
+
+	newRating := RatingSection{
+		RatingCount: scrapedRecipe.AggregatedRating.RatingCount,
+		RatingValue: scrapedRecipe.AggregatedRating.RatingValue,
+		RecipeID:    newRecipe.ID,
+	}
+
+	err = r.db.Table("rating_sections").Create(&newRating).Error
+
+	if err != nil {
+		return err
+	}
+
+	newKeyword := RecipeKeyword{
+		Keyword:  scrapedRecipe.Keywords,
+		RecipeID: newRecipe.ID,
+	}
+	err = r.db.Table("recipe_keywords").Create(&newKeyword).Error
+
+	if err != nil {
+		return err
 	}
 
 	return err
 }
 
 func (r *Repository) AutoMigrate() error {
-	if err := r.db.AutoMigrate(&User{}, &Recipe{}, &DailyRecipes{}).Error; err != nil {
+	if err := r.db.AutoMigrate(&User{}, &RecipeInstruction{},
+		&RatingSection{}, &RecipeKeyword{}, &RecipeIngredient{}, &RecipeImage{}, &Recipe{}, &DailyRecipes{}).Error; err != nil {
 		return err
 	}
 	return nil
