@@ -13,6 +13,14 @@ REGISTRY ?= mbvofdocker
 
 SRC_DIRS := cmd pkg # directories which hold app source (not vendored)
 
+dev_mode := DEVELOPMENT_MODE=true
+send_grid_usr := SEND_GRID_USER=00d529b7247ff7
+send_grid_key := SEND_GRID_API_KEY=84af903e641a55
+host := HOST=smtp.mailtrap.io
+mail_port := MAIL_PORT=25
+is_staging := IS_STAGING=true
+db_url := DATABASE_URL="postgres://postgres:postgres@localhost/bandlokaler_test?sslmode=disable"
+
 # Used internally.  Users should pass GOOS and/or GOARCH.
 OS := $(if $(GOOS),$(GOOS),$(shell go env GOOS))
 ARCH := $(if $(GOARCH),$(GOARCH),$(shell go env GOARCH))
@@ -29,8 +37,14 @@ vet:
 format:
 	@go fmt ./...
 
+dev:
+	air
+
+run-dev:
+	./start.sh ${dev_mode} ${send_grid_usr} ${send_grid_key} ${host mail_port} ${is_staging} ${db_url}
+
 # Work around for connecting to DB on host when running the app in docker
-dev: vet format
+dev-build: vet format
 	@docker build --rm --build-arg VERSION=${VERSION} -t ${REGISTRY}/${OUT}:${VERSION} .
 	@docker run --rm -e DEVELOPMENT_MODE=true -e SEND_GRID_USER=00d529b7247ff7 -e SEND_GRID_API_KEY=84af903e641a55 -e HOST=smtp.mailtrap.io -e MAIL_PORT=25 -e IS_STAGING=true -e DATABASE_URL="postgres://postgres:postgres@host.docker.internal/bandlokaler_test?sslmode=disable" -p 5000:5000 ${REGISTRY}/${OUT}:${VERSION}
 
