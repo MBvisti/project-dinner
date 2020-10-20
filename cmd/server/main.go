@@ -2,16 +2,18 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
+	"os"
+	app "project-dinner/pkg/"
+	"project-dinner/pkg/repository"
+	"strconv"
+	"time"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	"github.com/robfig/cron/v3"
 	"gopkg.in/gomail.v2"
-	"math/rand"
-	"os"
-	app "project-dinner/pkg"
-	"strconv"
-	"time"
 )
 
 func main() {
@@ -46,10 +48,10 @@ func run() error {
 		return err
 	}
 
-	s := app.NewRepository(database)
+	s := repository.NewRepository(database)
 
 	defer database.Close()
-	s.AutoMigrate()
+	s.MigrateTables()
 
 	t, err := time.LoadLocation("Europe/Copenhagen")
 
