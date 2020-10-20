@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
-	app "project-dinner/pkg/"
+	app "project-dinner/pkg"
 	"project-dinner/pkg/repository"
 	"strconv"
 	"time"
