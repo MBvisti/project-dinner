@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"strings"
+
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
@@ -21,87 +23,91 @@ func NewRepository(db *gorm.DB) *Repository {
 	}
 }
 
-func (r *Repository) CreateRecipe(nr Recipe) error {
+func (r *Repository) CreateRecipe(nR Recipe) error {
 
-	// newRecipe := Recipe{
-	// 	Description: scrapedRecipe.Description,
-	// 	// RecipeCategory: scrapedRecipe.RecipeCategory[0],
-	// 	// RecipeCuisine: scrapedRecipe.RecipeCuisine[0],
-	// 	// RecipeYield:   scrapedRecipe.RecipeYield[0],
-	// 	Type: scrapedRecipe.Type,
-	// }
+	newRecipe := RecipeTable{
+		Category:    nR.Category,
+		Cuisine:     nR.Cuisine,
+		Description: nR.Description,
+		Name:        nR.Name,
+		Yield:       nR.Yield,
+		FoundOn:     nR.FoundOn,
+	}
 
-	// err := r.db.Table("recipes").Create(&newRecipe).Error
+	err := r.db.Create(&newRecipe).Error
 
-	// if err != nil {
-	// 	return err
-	// }
+	if err != nil {
+		return err
+	}
 
-	// for _, image := range scrapedRecipe.Image {
-	// 	newImage := RecipeImage{
-	// 		Image:    image,
-	// 		RecipeID: newRecipe.ID,
-	// 	}
-	// 	err = r.db.Table("recipe_images").Create(&newImage).Error
+	for _, img := range nR.Images {
+		newImage := RecipeImageTable{
+			Image:    img,
+			RecipeID: newRecipe.ID,
+		}
 
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// }
+		err = r.db.Create(&newImage).Error
 
-	// for _, instruction := range scrapedRecipe.RecipeInstructions {
-	// 	newInstruction := RecipeInstruction{
-	// 		Text:     instruction.Text,
-	// 		RecipeID: newRecipe.ID,
-	// 		Step:     2,
-	// 	}
-	// 	err = r.db.Table("recipe_instructions").Create(&newInstruction).Error
+		if err != nil {
+			return err
+		}
+	}
 
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// }
+	for _, instruction := range nR.Instructions {
+		newInstruction := RecipeInstructionTable{
+			Text:     instruction.Text,
+			RecipeID: newRecipe.ID,
+			Step:     instruction.Step,
+		}
+		err = r.db.Create(&newInstruction).Error
 
-	// for _, ingredient := range scrapedRecipe.RecipeIngredients {
-	// 	newIngredient := Ingredient{
-	// 		Ingredient: ingredient,
-	// 		RecipeID:   newRecipe.ID,
-	// 	}
-	// 	err = r.db.Table("recipe_ingredients").Create(&newIngredient).Error
+		if err != nil {
+			return err
+		}
+	}
 
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// }
+	for _, ingredient := range nR.Ingredients {
+		newIngredient := IngredientTable{
+			Ingredient: ingredient,
+			RecipeID:   newRecipe.ID,
+		}
+		err = r.db.Create(&newIngredient).Error
 
-	// newRating := Rating{
-	// 	Votes:    scrapedRecipe.AggregatedRating.RatingCount,
-	// 	Score:    scrapedRecipe.AggregatedRating.RatingValue,
-	// 	RecipeID: newRecipe.ID,
-	// }
+		if err != nil {
+			return err
+		}
+	}
 
-	// err = r.db.Table("rating_sections").Create(&newRating).Error
+	newRating := RatingTable{
+		Votes:    nR.Score.Votes,
+		Score:    nR.Score.Score,
+		RecipeID: newRecipe.ID,
+	}
 
-	// if err != nil {
-	// 	return err
-	// }
+	err = r.db.Create(&newRating).Error
 
-	// newKeyword := Keyword{
-	// 	Keyword:  scrapedRecipe.Keywords,
-	// 	RecipeID: newRecipe.ID,
-	// }
-	// err = r.db.Table("recipe_keywords").Create(&newKeyword).Error
+	if err != nil {
+		return err
+	}
 
-	// if err != nil {
-	// 	return err
-	// }
+	for _, keyWord := range nR.Keywords {
+		newKeyword := KeywordTable{
+			Keyword:  strings.TrimSpace(keyWord),
+			RecipeID: newRecipe.ID,
+		}
+		err = r.db.Create(&newKeyword).Error
+
+		if err != nil {
+			return err
+		}
+	}
 
 	return nil
 }
 
 // Utility functinos
 func (r *Repository) DestructiveReset() error {
-	err := r.db.DropTableIfExists(&UserTable{}, &RecipeCategoryTable{},
+	err := r.db.DropTableIfExists(&UserTable{}, &RecipeCategoryTable{}, &RecipeInstructionTable{},
 		&RatingTable{}, &IngredientTable{}, &KeywordTable{}, &RecipeImageTable{}, &RecipeTable{}, &DailyRecipes{}).Error
 	if err != nil {
 		return err
@@ -138,7 +144,7 @@ func (r *Repository) DestructiveReset() error {
 }
 
 func (r *Repository) MigrateTables() error {
-	if err := r.db.AutoMigrate(&UserTable{}, &RecipeCategoryTable{},
+	if err := r.db.AutoMigrate(&UserTable{}, &RecipeCategoryTable{}, &RecipeInstructionTable{},
 		&RatingTable{}, &IngredientTable{}, &KeywordTable{}, &RecipeImageTable{}, &RecipeTable{}, &DailyRecipes{}).Error; err != nil {
 		return err
 	}
