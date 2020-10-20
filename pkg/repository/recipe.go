@@ -18,6 +18,7 @@ type Recipe struct {
 	Images       []string
 	Instructions []Instruction
 	Score        Rating
+	FoundOn      string
 }
 
 // Instruction ...

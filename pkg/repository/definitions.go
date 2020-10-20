@@ -11,11 +11,11 @@ import "github.com/jinzhu/gorm"
 type RecipeTable struct {
 	gorm.Model
 	Name        string
-	Type        string
 	Description string
 	Category    string
 	Cuisine     string
-	Yield       string
+	Yield       int
+	FoundOn     string
 }
 
 // CategoryTable is self-explanatory
