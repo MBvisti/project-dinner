@@ -2,11 +2,14 @@ package app
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"project-dinner/pkg/repository"
+	"reflect"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -160,6 +163,7 @@ type Base struct {
 
 type ScrapedRecipeSection struct {
 	Type               string                      `json:"@type"`
+	Name               string                      `json:"name"`
 	ID                 string                      `json:"@id"`
 	AggregatedRating   ScrapedRatingSection        `json:"aggregateRating"`
 	Description        string                      `json:"description"`
@@ -171,14 +175,20 @@ type ScrapedRecipeSection struct {
 	RecipeCuisine      []string                    `json:"recipeCuisine"`
 	RecipeInstructions []ScrapedRecipeInstructions `json:"recipeInstructions"`
 	RecipeYield        []string                    `json:"recipeYield"`
+	FoundOn            string
 }
 
 type ScrapedRecipeInstructions struct {
-	Type            string              `json:"@type"`
-	Name            string              `json:"name,omitempty"`
-	URL             string              `json:"url,omitempty"`
-	Text            string              `json:"text,omitempty"`
-	ItemListElement []map[string]string `json:"itemListElement,omitempty"`
+	Type            string            `json:"@type"`
+	Name            string            `json:"name,omitempty"`
+	URL             string            `json:"url,omitempty"`
+	Text            string            `json:"text,omitempty"`
+	ItemListElement []ItemListElement `json:"itemListElement,omitempty"`
+}
+
+type ItemListElement struct {
+	Type string `json:"@type"`
+	Text string `json:"text"`
 }
 
 type ScrapedRatingSection struct {
@@ -207,7 +217,7 @@ func (s *Server) CrawlUrls() []string {
 }
 
 // Crawler ...
-func (s *Server) Crawler(url string) (*repository.Recipe, error) {
+func (s *Server) Crawler(url string) (repository.Recipe, error) {
 	crawler := colly.NewCollector()
 	crawler.Limit(&colly.LimitRule{
 		DomainGlob: "https://thecleaneatingcouple.com/*",
@@ -229,7 +239,7 @@ func (s *Server) Crawler(url string) (*repository.Recipe, error) {
 
 	if err != nil {
 		log.Printf("this is from the crawler visit error: %v", err)
-		return nil, err
+		return repository.Recipe{}, err
 	}
 
 	var ScapedRecipe repository.Recipe
@@ -239,10 +249,63 @@ func (s *Server) Crawler(url string) (*repository.Recipe, error) {
 			continue
 		}
 
-		log.Printf("this is section: %v", section)
+		if reflect.DeepEqual(section.Description, "") {
+			fmt.Print("desc empty")
+		}
 
-		// ScapedRecipe = section
+		var recipeInstructions []repository.Instruction
+
+		if len(section.RecipeInstructions[0].ItemListElement) == 0 {
+			for index, instruction := range section.RecipeInstructions {
+
+				r := repository.Instruction{
+					Step: index,
+					Text: instruction.Name,
+				}
+
+				recipeInstructions = append(recipeInstructions, r)
+			}
+		}
+
+		if len(section.RecipeInstructions[0].ItemListElement) != 0 {
+			for index, ingredient := range section.RecipeInstructions {
+
+				r := repository.Instruction{
+					Step: index,
+					Text: ingredient.ItemListElement[0].Text,
+				}
+
+				recipeInstructions = append(recipeInstructions, r)
+			}
+		}
+
+		recipeKeywords := strings.Split(section.Keywords, ",")
+
+		yield, err := strconv.Atoi(section.RecipeYield[0])
+
+		if err != nil {
+			yield = 0
+		}
+
+		recipe := repository.Recipe{
+			Name:         section.Name,
+			Category:     strings.ToLower(section.RecipeCategory[0]),
+			Cuisine:      strings.ToLower(section.RecipeCuisine[0]),
+			Description:  section.Description,
+			Images:       section.Image,
+			Ingredients:  section.RecipeIngredients,
+			Instructions: recipeInstructions,
+			Keywords:     recipeKeywords,
+			Score: repository.Rating{
+				Score: section.AggregatedRating.RatingValue,
+				Votes: section.AggregatedRating.RatingCount,
+			},
+			FoundOn: url,
+			Yield:   yield,
+		}
+
+		ScapedRecipe = recipe
 	}
 
-	return &ScapedRecipe, nil
+	return ScapedRecipe, nil
 }
