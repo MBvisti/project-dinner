@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"project-dinner/pkg/repository"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -246,14 +247,21 @@ func (s *Server) CrawlSite() gin.HandlerFunc {
 
 		log.Printf("this is the link list : %v", links)
 
+		var returnedData []repository.Recipe
 		for _, link := range links {
-			_, err := s.Crawler(link)
+			res, err := s.Crawler(link)
 			if err != nil {
 				log.Printf("this is the crawler error: %v", err.Error())
 				continue
 			}
 
-			// err = s.storage.CreateRecipe(res)
+			if res.Description == "" {
+				continue
+			}
+			returnedData = append(returnedData, res)
+
+			err = s.storage.CreateRecipe(res)
+
 			if err != nil {
 				log.Printf("this is the storage error: %v", err.Error())
 				continue
@@ -263,6 +271,7 @@ func (s *Server) CrawlSite() gin.HandlerFunc {
 		response := map[string]interface{}{
 			"status":   "success",
 			"response": "site successfully crawled",
+			"data":     returnedData,
 		}
 		c.JSON(http.StatusOK, response)
 	}
