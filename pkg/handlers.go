@@ -243,9 +243,14 @@ func (s *Server) CrawlSite() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Header("Content-Type", "application/json")
 
-		links := s.CrawlUrls()
+		pages := 10
+		var links []string
+		baseURL := "https://thecleaneatingcouple.com/category/recipes/lunch-dinner/page/"
 
-		log.Printf("this is the link list : %v", links)
+		for page := 1; page < pages; page++ {
+			newLinks := s.CrawlUrls(baseURL + strconv.Itoa(page))
+			links = append(links, newLinks...)
+		}
 
 		var returnedData []repository.Recipe
 		for _, link := range links {
@@ -271,7 +276,6 @@ func (s *Server) CrawlSite() gin.HandlerFunc {
 		response := map[string]interface{}{
 			"status":   "success",
 			"response": "site successfully crawled",
-			"data":     returnedData,
 		}
 		c.JSON(http.StatusOK, response)
 	}
