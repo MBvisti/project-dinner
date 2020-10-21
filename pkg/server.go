@@ -196,13 +196,19 @@ type ScrapedRatingSection struct {
 	RatingValue string `json:"ratingValue"`
 }
 
-func (s *Server) CrawlUrls() []string {
+func (s *Server) CrawlUrls(pageUrl string) []string {
 	crawler := colly.NewCollector()
 
 	crawler.Limit(&colly.LimitRule{
 		DomainGlob: "https://thecleaneatingcouple.com/*",
-		Delay:      4 * time.Second,
+		RandomDelay:      4 * time.Second,
 	})
+
+	// Before making a request print "Visiting ..."
+	crawler.OnRequest(func(r *colly.Request) {
+		log.Println("visiting", r.URL.String())
+	})
+
 	var linkList []string
 
 	crawler.OnHTML("a[class='entry-image-link']", func(e *colly.HTMLElement) {
@@ -211,7 +217,7 @@ func (s *Server) CrawlUrls() []string {
 		linkList = append(linkList, link)
 	})
 
-	crawler.Visit("https://thecleaneatingcouple.com/category/recipes/lunch-dinner/")
+	crawler.Visit(pageUrl)
 
 	return linkList
 }
@@ -219,10 +225,12 @@ func (s *Server) CrawlUrls() []string {
 // Crawler ...
 func (s *Server) Crawler(url string) (repository.Recipe, error) {
 	crawler := colly.NewCollector()
+
 	crawler.Limit(&colly.LimitRule{
 		DomainGlob: "https://thecleaneatingcouple.com/*",
-		Delay:      2 * time.Second,
+		RandomDelay:     5 * time.Second,
 	})
+
 	var crawlerResult Base
 	var WholeBody map[string]interface{}
 
