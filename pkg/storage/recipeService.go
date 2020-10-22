@@ -1,33 +1,32 @@
 package repository
 
 import (
-	"errors"
 	"math/rand"
 	"strings"
 
 	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
-// Repository ...
-type Repository struct {
+// RecipeService ...
+type RecipeService interface {
+	GetRandomRecipes() ([]EmailRecipe, error)
+	CreateScrapedRecipe(nR Recipe) error
+}
+
+type recipeService struct {
+	rS RecipeService
 	db *gorm.DB
 }
 
-// NewRepository returns a new repository
-func NewRepository(db *gorm.DB) *Repository {
-	return &Repository{
+// NewRecipeService ...
+func NewRecipeService(db *gorm.DB) RecipeService {
+	return &recipeService{
 		db: db,
 	}
 }
 
-var (
-	// ErrNoData is returned when there is no data in a given table
-	ErrNoData = errors.New("repo: no data for the requested resource")
-)
-
 // GetRandomRecipes ...
-func (r *Repository) GetRandomRecipes() ([]EmailRecipe, error) {
+func (r *recipeService) GetRandomRecipes() ([]EmailRecipe, error) {
 	numberOfEntries := 0
 	err := r.db.Raw("select count(*) from recipe_tables").Count(&numberOfEntries).Error
 
@@ -159,7 +158,7 @@ func (r *Repository) GetRandomRecipes() ([]EmailRecipe, error) {
 }
 
 // CreateScrapedRecipe saves a recipe from a scraped site
-func (r *Repository) CreateScrapedRecipe(nR Recipe) error {
+func (r *recipeService) CreateScrapedRecipe(nR Recipe) error {
 
 	newRecipe := RecipeTable{
 		Category:    nR.Category,
@@ -239,65 +238,4 @@ func (r *Repository) CreateScrapedRecipe(nR Recipe) error {
 	}
 
 	return nil
-}
-
-// Utility functions below
-
-// DestructiveReset resets the database and and creates two users
-func (r *Repository) DestructiveReset() error {
-	err := r.db.DropTableIfExists(&UserTable{}, &RecipeCategoryTable{}, &RecipeInstructionTable{},
-		&RatingTable{}, &IngredientTable{}, &KeywordTable{}, &RecipeImageTable{}, &RecipeTable{}, &DailyRecipes{}).Error
-	if err != nil {
-		return err
-	}
-
-	err = r.MigrateTables()
-	if err != nil {
-		return err
-	}
-
-	morten := UserTable{
-		Email: "mbv1406@gmail.com",
-		Name:  "Morten",
-	}
-
-	err = r.db.Create(&morten).Error
-
-	if err != nil {
-		return err
-	}
-
-	javiera := UserTable{
-		Email: "j.camuslaso@gmail.com",
-		Name:  "Javiera",
-	}
-
-	err = r.db.Create(&javiera).Error
-
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// MigrateTables migrates all tables in definitions
-func (r *Repository) MigrateTables() error {
-	if err := r.db.AutoMigrate(&UserTable{}, &RecipeCategoryTable{}, &RecipeInstructionTable{},
-		&RatingTable{}, &IngredientTable{}, &KeywordTable{}, &RecipeImageTable{}, &RecipeTable{}, &DailyRecipes{}).Error; err != nil {
-		return err
-	}
-	return nil
-}
-
-// GetEmailList returns the email list - TODO: maybe separate the user list and emailing list into two different tables?
-func (r *Repository) GetEmailList() ([]UserEmail, error) {
-	var emailList []UserEmail
-	err := r.db.Table("user_tables").Select("email, name").Scan(&emailList).Error
-
-	if err != nil {
-		return nil, err
-	}
-
-	return emailList, nil
 }
