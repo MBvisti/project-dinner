@@ -6,7 +6,17 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-// Recipe ...
+// EmailRecipe is a shorter version of a recipe only intended for emails
+type EmailRecipe struct {
+	Name        string
+	Description string
+	Category    string
+	Cuisine     string
+	ThumbNail   string
+	FoundOn     string
+}
+
+// Recipe is for a whole recipe
 type Recipe struct {
 	Name         string
 	Description  string
