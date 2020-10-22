@@ -28,7 +28,7 @@ func NewRecipeService(db *gorm.DB) RecipeService {
 // GetRandomRecipes ...
 func (r *recipeService) GetRandomRecipes() ([]EmailRecipe, error) {
 	numberOfEntries := 0
-	err := r.db.Raw("select count(*) from recipe_tables").Count(&numberOfEntries).Error
+	err := r.db.Raw("select count(*) from recipes").Count(&numberOfEntries).Error
 
 	if err != nil {
 		return nil, err
