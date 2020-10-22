@@ -9,4 +9,6 @@ export $6
 export $7
 
 kill -9 `lsof -nP -i4TCP:5000 | grep LISTEN | tr -s ' ' | cut -d' ' -f2`
+go vet ./...
+go fmt ./...
 go run cmd/server/main.go

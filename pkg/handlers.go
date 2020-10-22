@@ -2,18 +2,20 @@ package app
 
 import (
 	"bytes"
-	"gopkg.in/gomail.v2"
 	"html/template"
 	"log"
 	"net/http"
 	"os"
-	"project-dinner/pkg/repository"
+	repository "project-dinner/pkg/storage"
 	"strconv"
+
+	"gopkg.in/gomail.v2"
 
 	"github.com/gin-gonic/gin"
 )
 
-func (s *Server) ApiStatus() gin.HandlerFunc {
+// APIStatus returns the status of the api
+func (s *Server) APIStatus() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Header("Content-Type", "application/json")
 
@@ -26,22 +28,14 @@ func (s *Server) ApiStatus() gin.HandlerFunc {
 	}
 }
 
+// ResetDatabase endpoint used to reset DB in development
 func (s *Server) ResetDatabase() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Header("Content-Type", "application/json")
 
-		developmentMode, err := strconv.ParseBool(os.Getenv("DEVELOPMENT_MODE"))
+		whatEnv := os.Getenv("WHAT_ENVIRONMENT_IS_THIS")
 
-		if err != nil {
-			response := map[string]string{
-				"status": "failure",
-				"data":   "couldn't determine the development mode",
-			}
-
-			c.JSON(http.StatusInternalServerError, response)
-		}
-
-		if !developmentMode {
+		if whatEnv != "development" {
 			response := map[string]string{
 				"status": "failure",
 				"data":   "don't reset the db in production idiot",
@@ -51,7 +45,7 @@ func (s *Server) ResetDatabase() gin.HandlerFunc {
 			return
 		}
 
-		err = s.storage.DestructiveReset()
+		err := s.storage.DestructiveReset()
 
 		if err != nil {
 			response := map[string]string{
@@ -71,6 +65,7 @@ func (s *Server) ResetDatabase() gin.HandlerFunc {
 	}
 }
 
+// StopCronJob stops cron object running on the server struct
 func (s *Server) StopCronJob() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Header("Content-Type", "application/json")
@@ -85,119 +80,17 @@ func (s *Server) StopCronJob() gin.HandlerFunc {
 	}
 }
 
-// func (s *Server) CreateRecipe() gin.HandlerFunc {
-// 	return func(c *gin.Context) {
-// 		c.Header("Content-Type", "application/json")
-
-// 		var recipe Recipe
-
-// 		err := c.ShouldBindJSON(&recipe)
-
-// 		if err != nil {
-// 			response := map[string]string{
-// 				"status": "failure",
-// 				"data":   "recipe not created",
-// 			}
-// 			c.JSON(http.StatusBadRequest, response)
-// 			return
-// 		}
-
-// 		//err = s.storage.CreateRecipe(&recipe)
-
-// 		if err != nil {
-// 			response := map[string]string{
-// 				"status": "failure",
-// 				"data":   "recipe not created",
-// 			}
-// 			c.JSON(http.StatusInternalServerError, response)
-// 			return
-// 		}
-
-// 		response := map[string]string{
-// 			"status": "success",
-// 			"data":   "recipe created",
-// 		}
-// 		c.JSON(http.StatusOK, response)
-// 	}
-// }
-
-// type AllRecipes struct {
-// 	Recipes []Recipe `json:"recipes"`
-// }
-
-// func (s *Server) GetFourRandomRecipes() gin.HandlerFunc {
-// 	return func(c *gin.Context) {
-// 		c.Header("Content-Type", "application/json")
-
-// 		resp, err := http.Get("https://api.spoonacular.com/recipes/random?apiKey=5ce66a1c4dc546f2a512059d8df566f7&tags=vegetarian,dinner&number=4")
-
-// 		if err != nil {
-// 			response := map[string]string{
-// 				"status": "failure",
-// 				"data":   err.Error(),
-// 			}
-// 			c.JSON(http.StatusInternalServerError, response)
-// 		}
-
-// 		var recipe AllRecipes
-
-// 		if err := json.NewDecoder(resp.Body).Decode(&recipe); err != nil {
-// 			response := map[string]string{
-// 				"status": "failure",
-// 				"data":   err.Error(),
-// 			}
-// 			c.JSON(http.StatusInternalServerError, response)
-// 		}
-
-// 		log.Print(recipe)
-// 		// err = s.storage.CreateRecipe(recipe.Recipes)
-
-// 		if err != nil {
-// 			log.Printf("there was an error saving the recipe to the database: %v", err)
-// 		}
-
-// 		c.JSON(http.StatusOK, recipe.Recipes)
-// 	}
-// }
-
-func (s *Server) WakeDyno() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.Header("Content-Type", "application/json")
-
-		response := map[string]string{
-			"status": "success",
-			"data":   "dyno is awake again",
-		}
-		c.JSON(http.StatusOK, response)
-	}
+type AllRecipes struct {
+	Recipes []repository.Recipe `json:"recipes"`
 }
 
-// func (s *Server) EmailList() gin.HandlerFunc {
-// 	return func(c *gin.Context) {
-// 		c.Header("Content-Type", "application/json")
-
-// 		//users, err := s.storage.GetEmailList()
-
-// 		recipes, err := s.storage.TodaysRecipes()
-
-// 		if err != nil {
-// 			response := map[string]string{
-// 				"status": "failure",
-// 				"data":   "couldn't retrive list",
-// 			}
-// 			c.JSON(http.StatusInternalServerError, response)
-// 			return
-// 		}
-
-// 		c.JSON(http.StatusOK, recipes)
-// 	}
-// }
-
+// UserRecipe ... TODO: move this in to a user service at one point
 type UserRecipe struct {
 	UserName string
-	Recipes []repository.EmailRecipe
+	Recipes  []repository.EmailRecipe
 }
 
+// SendMails send out recipe emails
 func (s *Server) SendMails() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		mailTemplate, err := template.ParseFiles("./template/daily_recipe_email.html")
@@ -207,13 +100,13 @@ func (s *Server) SendMails() gin.HandlerFunc {
 
 		var emailList []*gomail.Message
 
-		userList, err := s.storage.GetEmailList()
+		userList, err := s.storage.User.GetEmailList()
 
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"err": err.Error()})
 		}
 
-		recipes, err := s.storage.GetRandomRecipes()
+		recipes, err := s.storage.Recipe.GetRandomRecipes()
 
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"err": err.Error()})
@@ -244,14 +137,15 @@ func (s *Server) SendMails() gin.HandlerFunc {
 		}
 
 		response := map[string]interface{}{
-			"status": "success",
-			"response":   "all email sent",
+			"status":   "success",
+			"response": "all email sent",
 		}
 		c.JSON(http.StatusOK, response)
 
 	}
 }
 
+// CrawlSite endpint gets all links to a recipe on the clean eating couple, scrape the recipe and stores it in db
 func (s *Server) CrawlSite() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Header("Content-Type", "application/json")
@@ -277,8 +171,7 @@ func (s *Server) CrawlSite() gin.HandlerFunc {
 				continue
 			}
 			returnedData = append(returnedData, res)
-
-			err = s.storage.CreateScrapedRecipe(res)
+			err = s.storage.Recipe.CreateScrapedRecipe(res)
 
 			if err != nil {
 				log.Printf("this is the storage error: %v", err.Error())

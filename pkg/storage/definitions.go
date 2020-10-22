@@ -8,7 +8,7 @@ import "github.com/jinzhu/gorm"
 */
 
 // RecipeTable is the base table for a recipe
-type RecipeTable struct {
+type recipe struct {
 	gorm.Model
 	Name        string
 	Description string
@@ -19,78 +19,78 @@ type RecipeTable struct {
 }
 
 // CategoryTable is self-explanatory
-type CategoryTable struct {
+type category struct {
 	gorm.Model
 	category string
 }
 
 // CuisineTable is self-explanatory
-type CuisineTable struct {
+type cuisine struct {
 	gorm.Model
 	name string
 }
 
 // RecipeCategoryTable is a connection table
-type RecipeCategoryTable struct {
+type recipeCategory struct {
 	RecipeID   uint
 	CategoryID uint
-	Recipe     RecipeTable
-	Category   CategoryTable
+	Recipe     recipe
+	Category   category
 }
 
 // RecipeCuisineTable is a connection table
-type RecipeCuisineTable struct {
+type recipeCuisine struct {
 	RecipeID  uint
 	CuisineID uint
-	Recipe    RecipeTable
-	Cuisine   CuisineTable
+	Recipe    recipe
+	Cuisine   cuisine
 }
 
 // IngredientTable contains ingredient with a reference to a certain recipe
-type IngredientTable struct {
+type recipeIngredient struct {
 	gorm.Model
 	// TODO: change this column name
 	Ingredient string
 	RecipeID   uint
-	Recipe     RecipeTable
+	Recipe     recipe
 }
 
 // KeywordTable contains keywords with a reference to a certain recipe
-type KeywordTable struct {
+type recipeKeyword struct {
 	gorm.Model
 	Keyword  string
 	RecipeID uint
-	Recipe   RecipeTable
+	Recipe   recipe
 }
 
 // RecipeImageTable is images of a certain recipe
-type RecipeImageTable struct {
+type recipeImage struct {
 	gorm.Model
 	Image    string
 	RecipeID uint
-	Recipe   RecipeTable
+	Recipe   recipe
 }
 
 // RecipeInstructionTable is instructions for a certain recipe
-type RecipeInstructionTable struct {
+type recipeInstruction struct {
 	gorm.Model
 	Step     int
 	Text     string
 	RecipeID uint
-	Recipe   RecipeTable
+	Recipe   recipe
 }
 
 // RatingTable is the score and number of votes a recipe has
-type RatingTable struct {
+type rating struct {
 	gorm.Model
 	Votes    string
 	Score    string
 	RecipeID uint
-	Recipe   RecipeTable
+	Recipe   recipe
 }
 
 // UserTable ...
-type UserTable struct {
+type user struct {
 	gorm.Model
 	Email string `gorm:"not null;unique_index"`
 	Name  string

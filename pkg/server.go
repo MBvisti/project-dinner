@@ -1,12 +1,14 @@
 package app
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
-	"os"
-	"project-dinner/pkg/repository"
+	repository "project-dinner/pkg/storage"
+
 	"reflect"
 	"strconv"
 	"strings"
@@ -21,18 +23,13 @@ import (
 // Server ...
 type Server struct {
 	router  *gin.Engine
-	storage *repository.Repository
+	storage *repository.Services
 	cron    *cron.Cron
 	mailer  *gomail.Dialer
 }
 
-// type UserRecipe struct {
-// 	UserName string
-// 	Recipes  []DailyRecipes
-// }
-
 // NewServer returns a new server
-func NewServer(s *repository.Repository, r *gin.Engine, c *cron.Cron, m *gomail.Dialer) Server {
+func NewServer(s *repository.Services, r *gin.Engine, c *cron.Cron, m *gomail.Dialer) Server {
 	return Server{
 		storage: s,
 		router:  r,
@@ -44,24 +41,11 @@ func NewServer(s *repository.Repository, r *gin.Engine, c *cron.Cron, m *gomail.
 // Run starts the server
 func (s *Server) Run(addr string) error {
 	// TODO: change this to setup the main cronjob
-	// err := s.CronMailer()
+	err := s.RecipeMailer()
 
-	// if err != nil {
-	// 	log.Printf("this is err from cronjob: %v", err)
-	// 	return err
-	// }
-
-	// TODO: change this when no longer needed
-	isStaging, err := strconv.ParseBool(os.Getenv("IS_STAGING"))
 	if err != nil {
+		log.Printf("this is err from cronjob: %v", err)
 		return err
-	}
-
-	if isStaging {
-		err = s.storage.DestructiveReset()
-		if err != nil {
-			return err
-		}
 	}
 
 	log.Printf("Starting the server on: %v", addr)
@@ -74,93 +58,66 @@ func (s *Server) Run(addr string) error {
 	return nil
 }
 
-// func (s *Server) GetDailyRecipes() error {
-// 	resp, err := http.Get("https://api.spoonacular.com/recipes/random?apiKey=5ce66a1c4dc546f2a512059d8df566f7&tags=vegetarian,dinner&number=4")
+// RecipeMailer sends out the daily recipes
+func (s *Server) RecipeMailer() error {
+	mailTemplate, err := template.ParseFiles("./template/daily_recipe_email.html")
 
-// 	if err != nil {
-// 		return err
-// 	}
+	if err != nil {
+		return err
+	}
 
-// 	var recipe AllRecipes
+	var emailList []*gomail.Message
 
-// 	if err := json.NewDecoder(resp.Body).Decode(&recipe); err != nil {
-// 		return err
-// 	}
+	userList, err := s.storage.User.GetEmailList()
 
-// 	err = s.storage.CreateRecipe(recipe.Recipes)
+	if err != nil {
+		return err
+	}
 
-// 	if err != nil {
-// 		return err
-// 	}
+	dailyRecipes, err := s.storage.Recipe.GetRandomRecipes()
 
-// 	return nil
-// }
+	if err != nil {
+		s.CrawlSite()
+	}
 
-// func (s *Server) CronMailer() error {
-// 	mailTemplate, err := template.ParseFiles("../template/daily_recipe_email.html")
+	for _, user := range userList {
+		usrRecipe := UserRecipe{
+			UserName: user.Name,
+			Recipes:  dailyRecipes,
+		}
 
-// 	if err != nil {
-// 		return err
-// 	}
+		var t bytes.Buffer
+		err = mailTemplate.Execute(&t, usrRecipe)
 
-// 	var emailList []*gomail.Message
+		mail := gomail.NewMessage()
+		mail.SetAddressHeader("From", "noreply@mbvistisen.dk", "Morten's recipe service")
+		mail.SetHeader("To", user.Email)
+		mail.SetHeader("Subject", "Your daily recipes are here!")
+		mail.SetBody("text/html", t.String())
 
-// 	userList, err := s.storage.GetEmailList()
+		emailList = append(emailList, mail)
+	}
 
-// 	if err != nil {
-// 		return err
-// 	}
+	s.cron.AddFunc("0 14 * * *", func() {
+		err := s.mailer.DialAndSend(emailList...)
 
-// 	dailyRecipes, err := s.storage.TodaysRecipes()
+		log.Printf("this is from the cron job")
+		if err != nil {
+			log.Printf("there was an error sending the mail: %v", err.Error())
+		}
+	})
 
-// 	if err != nil {
-// 		return err
-// 	}
+	s.cron.Start()
+	return nil
+}
 
-// 	for _, user := range userList {
-// 		usrRecipe := UserRecipe{
-// 			UserName: user.Name,
-// 			Recipes:  dailyRecipes,
-// 		}
-
-// 		var t bytes.Buffer
-// 		err = mailTemplate.Execute(&t, usrRecipe)
-
-// 		mail := gomail.NewMessage()
-// 		mail.SetAddressHeader("From", "noreply@mbvistisen.dk", "Morten's recipe service")
-// 		mail.SetHeader("To", user.Email)
-// 		mail.SetHeader("Subject", "Your daily recipes are here!")
-// 		mail.SetBody("text/html", t.String())
-
-// 		emailList = append(emailList, mail)
-// 	}
-
-// 	s.cron.AddFunc("0 12 * * *", func() {
-// 		err := s.GetDailyRecipes()
-
-// 		if err != nil {
-// 			log.Printf("there was an error getting recipes: %v", err.Error())
-// 		}
-// 	})
-
-// 	s.cron.AddFunc("0 13 * * *", func() {
-// 		err := s.mailer.DialAndSend(emailList...)
-
-// 		log.Printf("this is from the cron job")
-// 		if err != nil {
-// 			log.Printf("there was an error sending the mail: %v", err.Error())
-// 		}
-// 	})
-
-// 	s.cron.Start()
-// 	return nil
-// }
-
+// Base is the basic recipe structure in ld+json format
 type Base struct {
 	Context string                 `json:"@context"`
 	Graph   []ScrapedRecipeSection `json:"@graph"`
 }
 
+// ScrapedRecipeSection is a scraped recipe defined in ld+json format
 type ScrapedRecipeSection struct {
 	Type               string                      `json:"@type"`
 	Name               string                      `json:"name"`
@@ -178,6 +135,7 @@ type ScrapedRecipeSection struct {
 	FoundOn            string
 }
 
+// ScrapedRecipeInstructions is a scaped recipe's instructions defined in ld+json format
 type ScrapedRecipeInstructions struct {
 	Type            string            `json:"@type"`
 	Name            string            `json:"name,omitempty"`
@@ -186,16 +144,19 @@ type ScrapedRecipeInstructions struct {
 	ItemListElement []ItemListElement `json:"itemListElement,omitempty"`
 }
 
+// ItemListElement ...
 type ItemListElement struct {
 	Type string `json:"@type"`
 	Text string `json:"text"`
 }
 
+// ScrapedRatingSection ...
 type ScrapedRatingSection struct {
 	RatingCount string `json:"ratingCount"`
 	RatingValue string `json:"ratingValue"`
 }
 
+// CrawlUrls finds links and returns an array of them for a given page
 func (s *Server) CrawlUrls(pageUrl string) []string {
 	crawler := colly.NewCollector()
 
@@ -222,7 +183,7 @@ func (s *Server) CrawlUrls(pageUrl string) []string {
 	return linkList
 }
 
-// Crawler ...
+// Crawler actually scrapes a website
 func (s *Server) Crawler(url string) (repository.Recipe, error) {
 	crawler := colly.NewCollector()
 

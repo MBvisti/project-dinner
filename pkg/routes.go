@@ -7,14 +7,10 @@ func (s *Server) routes() *gin.Engine {
 
 	v1 := r.Group("/v1/api")
 	{
-		v1.GET("/status", s.ApiStatus())
-		v1.POST("/reset", s.ResetDatabase())
+		v1.GET("/status", s.APIStatus())
+		v1.POST("/database-reset", s.ResetDatabase())
 		v1.POST("/stop-cron", s.StopCronJob())
-		// v1.POST("/recipe", s.CreateRecipe())
-		v1.GET("/wakey-wakey", s.WakeDyno())
-		// v1.GET("/random-recipes", s.GetFourRandomRecipes())
 		v1.GET("/send-mails", s.SendMails())
-		// v1.GET("/users", s.EmailList())
 		v1.GET("/start-scraping-procedure", s.CrawlSite())
 	}
 

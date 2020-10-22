@@ -5,7 +5,7 @@ import (
 	"math/rand"
 	"os"
 	app "project-dinner/pkg"
-	"project-dinner/pkg/repository"
+	repository "project-dinner/pkg/storage"
 	"strconv"
 	"time"
 
@@ -25,15 +25,16 @@ func main() {
 
 func run() error {
 	port := os.Getenv("PORT")
-	developmentMode, err := strconv.ParseBool(os.Getenv("DEVELOPMENT_MODE"))
-
-	if err != nil {
-		return err
-	}
+	whatEnv := os.Getenv("WHAT_ENVIRONMENT_IS_THIS")
+	sendGridUser := os.Getenv("SEND_GRID_USER")
+	sendGridPassword := os.Getenv("SEND_GRID_API_KEY")
+	mailHost := os.Getenv("HOST")
+	connectionString := os.Getenv("DATABASE_URL")
+	mailPort, err := strconv.Atoi(os.Getenv("MAIL_PORT"))
 
 	gin.SetMode(gin.ReleaseMode)
 
-	if developmentMode {
+	if whatEnv == "development" {
 		port = "5000"
 		gin.SetMode(gin.DebugMode)
 	}
@@ -41,14 +42,13 @@ func run() error {
 	r := gin.Default()
 	r.Use(cors.Default())
 
-	connectionString := os.Getenv("DATABASE_URL")
-	database, err := setupDatabase(connectionString, developmentMode)
+	database, err := setupDatabase(connectionString, whatEnv)
 
 	if err != nil {
 		return err
 	}
 
-	s := repository.NewRepository(database)
+	s := repository.NewStorage(database)
 
 	defer database.Close()
 	s.MigrateTables()
@@ -60,11 +60,6 @@ func run() error {
 	}
 
 	c := cron.New(cron.WithLocation(t))
-
-	sendGridUser := os.Getenv("SEND_GRID_USER")
-	sendGridPassword := os.Getenv("SEND_GRID_API_KEY")
-	mailHost := os.Getenv("HOST")
-	mailPort, err := strconv.Atoi(os.Getenv("MAIL_PORT"))
 
 	m := gomail.NewDialer(mailHost, mailPort, sendGridUser, sendGridPassword)
 
@@ -82,14 +77,16 @@ func run() error {
 	return nil
 }
 
-func setupDatabase(connectionInfo string, logMode bool) (*gorm.DB, error) {
+func setupDatabase(connectionInfo string, environment string) (*gorm.DB, error) {
 	db, err := gorm.Open("postgres", connectionInfo)
 
 	if err != nil {
 		return nil, err
 	}
 
-	db.LogMode(logMode)
+	if environment == "development" {
+		db.LogMode(true)
+	}
 
 	return db, nil
 }
