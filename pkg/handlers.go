@@ -33,18 +33,9 @@ func (s *Server) ResetDatabase() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Header("Content-Type", "application/json")
 
-		developmentMode, err := strconv.ParseBool(os.Getenv("DEVELOPMENT_MODE"))
+		whatEnv := os.Getenv("WHAT_ENVIRONMENT_IS_THIS")
 
-		if err != nil {
-			response := map[string]string{
-				"status": "failure",
-				"data":   "couldn't determine the development mode",
-			}
-
-			c.JSON(http.StatusInternalServerError, response)
-		}
-
-		if !developmentMode {
+		if whatEnv != "development" {
 			response := map[string]string{
 				"status": "failure",
 				"data":   "don't reset the db in production idiot",
@@ -54,7 +45,7 @@ func (s *Server) ResetDatabase() gin.HandlerFunc {
 			return
 		}
 
-		err = s.storage.DestructiveReset()
+		err := s.storage.DestructiveReset()
 
 		if err != nil {
 			response := map[string]string{
