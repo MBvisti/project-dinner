@@ -30,8 +30,19 @@ var (
 
 // DestructiveReset resets the database and and creates two users
 func (r *Services) DestructiveReset() error {
-	err := r.db.DropTableIfExists(&UserTable{}, &RecipeCategoryTable{}, &RecipeInstructionTable{},
-		&RatingTable{}, &IngredientTable{}, &KeywordTable{}, &RecipeImageTable{}, &RecipeTable{}, &DailyRecipes{}).Error
+	err := r.db.DropTableIfExists(
+		&recipe{},
+		&category{},
+		&cuisine{},
+		&recipeCategory{},
+		&recipeCuisine{},
+		&recipeIngredient{},
+		&recipeKeyword{},
+		&recipeImage{},
+		&recipeInstruction{},
+		&rating{},
+		&user{},
+	).Error
 	if err != nil {
 		return err
 	}
@@ -41,7 +52,7 @@ func (r *Services) DestructiveReset() error {
 		return err
 	}
 
-	morten := UserTable{
+	morten := user{
 		Email: "mbv1406@gmail.com",
 		Name:  "Morten",
 	}
@@ -52,7 +63,7 @@ func (r *Services) DestructiveReset() error {
 		return err
 	}
 
-	javiera := UserTable{
+	javiera := user{
 		Email: "j.camuslaso@gmail.com",
 		Name:  "Javiera",
 	}
@@ -68,8 +79,19 @@ func (r *Services) DestructiveReset() error {
 
 // MigrateTables migrates all tables in definitions
 func (r *Services) MigrateTables() error {
-	if err := r.db.AutoMigrate(&UserTable{}, &RecipeCategoryTable{}, &RecipeInstructionTable{},
-		&RatingTable{}, &IngredientTable{}, &KeywordTable{}, &RecipeImageTable{}, &RecipeTable{}, &DailyRecipes{}).Error; err != nil {
+	if err := r.db.AutoMigrate(
+		&recipe{},
+		&category{},
+		&cuisine{},
+		&recipeCategory{},
+		&recipeCuisine{},
+		&recipeIngredient{},
+		&recipeKeyword{},
+		&recipeImage{},
+		&recipeInstruction{},
+		&rating{},
+		&user{},
+	).Error; err != nil {
 		return err
 	}
 	return nil

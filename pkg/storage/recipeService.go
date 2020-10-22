@@ -43,22 +43,22 @@ func (r *recipeService) GetRandomRecipes() ([]EmailRecipe, error) {
 	recipeThreeID := uint(rand.Intn(numberOfEntries-1) + 1)
 	recipeFourID := uint(rand.Intn(numberOfEntries-1) + 1)
 
-	recipeOne := RecipeTable{
+	recipeOne := recipe{
 		Model: gorm.Model{
 			ID: recipeOneID,
 		},
 	}
-	recipeTwo := RecipeTable{
+	recipeTwo := recipe{
 		Model: gorm.Model{
 			ID: recipeTwoID,
 		},
 	}
-	recipeThree := RecipeTable{
+	recipeThree := recipe{
 		Model: gorm.Model{
 			ID: recipeThreeID,
 		},
 	}
-	recipeFour := RecipeTable{
+	recipeFour := recipe{
 		Model: gorm.Model{
 			ID: recipeFourID,
 		},
@@ -85,10 +85,10 @@ func (r *recipeService) GetRandomRecipes() ([]EmailRecipe, error) {
 		return nil, err
 	}
 
-	recipeOneImage := RecipeImageTable{}
-	recipeTwoImage := RecipeImageTable{}
-	recipeThreeImage := RecipeImageTable{}
-	recipeFourImage := RecipeImageTable{}
+	recipeOneImage := recipeImage{}
+	recipeTwoImage := recipeImage{}
+	recipeThreeImage := recipeImage{}
+	recipeFourImage := recipeImage{}
 
 	err = r.db.Where("recipe_id = ?", recipeOneID).Last(&recipeOneImage).Error
 
@@ -160,7 +160,7 @@ func (r *recipeService) GetRandomRecipes() ([]EmailRecipe, error) {
 // CreateScrapedRecipe saves a recipe from a scraped site
 func (r *recipeService) CreateScrapedRecipe(nR Recipe) error {
 
-	newRecipe := RecipeTable{
+	newRecipe := recipe{
 		Category:    nR.Category,
 		Cuisine:     nR.Cuisine,
 		Description: nR.Description,
@@ -176,7 +176,7 @@ func (r *recipeService) CreateScrapedRecipe(nR Recipe) error {
 	}
 
 	for _, img := range nR.Images {
-		newImage := RecipeImageTable{
+		newImage := recipeImage{
 			Image:    img,
 			RecipeID: newRecipe.ID,
 		}
@@ -189,7 +189,7 @@ func (r *recipeService) CreateScrapedRecipe(nR Recipe) error {
 	}
 
 	for _, instruction := range nR.Instructions {
-		newInstruction := RecipeInstructionTable{
+		newInstruction := recipeInstruction{
 			Text:     instruction.Text,
 			RecipeID: newRecipe.ID,
 			Step:     instruction.Step,
@@ -202,7 +202,7 @@ func (r *recipeService) CreateScrapedRecipe(nR Recipe) error {
 	}
 
 	for _, ingredient := range nR.Ingredients {
-		newIngredient := IngredientTable{
+		newIngredient := recipeIngredient{
 			Ingredient: ingredient,
 			RecipeID:   newRecipe.ID,
 		}
@@ -213,7 +213,7 @@ func (r *recipeService) CreateScrapedRecipe(nR Recipe) error {
 		}
 	}
 
-	newRating := RatingTable{
+	newRating := rating{
 		Votes:    nR.Score.Votes,
 		Score:    nR.Score.Score,
 		RecipeID: newRecipe.ID,
@@ -226,7 +226,7 @@ func (r *recipeService) CreateScrapedRecipe(nR Recipe) error {
 	}
 
 	for _, keyWord := range nR.Keywords {
-		newKeyword := KeywordTable{
+		newKeyword := recipeKeyword{
 			Keyword:  strings.TrimSpace(keyWord),
 			RecipeID: newRecipe.ID,
 		}
