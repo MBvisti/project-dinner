@@ -156,11 +156,13 @@ func (s *Server) Run(addr string) error {
 // 	return nil
 // }
 
+// Base is the basic recipe structure in ld+json format
 type Base struct {
 	Context string                 `json:"@context"`
 	Graph   []ScrapedRecipeSection `json:"@graph"`
 }
 
+// ScrapedRecipeSection is a scraped recipe defined in ld+json format
 type ScrapedRecipeSection struct {
 	Type               string                      `json:"@type"`
 	Name               string                      `json:"name"`
@@ -178,6 +180,7 @@ type ScrapedRecipeSection struct {
 	FoundOn            string
 }
 
+// ScrapedRecipeInstructions is a scaped recipe's instructions defined in ld+json format
 type ScrapedRecipeInstructions struct {
 	Type            string            `json:"@type"`
 	Name            string            `json:"name,omitempty"`
@@ -186,16 +189,19 @@ type ScrapedRecipeInstructions struct {
 	ItemListElement []ItemListElement `json:"itemListElement,omitempty"`
 }
 
+// ItemListElement ...
 type ItemListElement struct {
 	Type string `json:"@type"`
 	Text string `json:"text"`
 }
 
+// ScrapedRatingSection ...
 type ScrapedRatingSection struct {
 	RatingCount string `json:"ratingCount"`
 	RatingValue string `json:"ratingValue"`
 }
 
+// CrawlUrls finds links and returns an array of them for a given page
 func (s *Server) CrawlUrls(pageUrl string) []string {
 	crawler := colly.NewCollector()
 
@@ -222,7 +228,7 @@ func (s *Server) CrawlUrls(pageUrl string) []string {
 	return linkList
 }
 
-// Crawler ...
+// Crawler actually scrapes a website
 func (s *Server) Crawler(url string) (repository.Recipe, error) {
 	crawler := colly.NewCollector()
 
