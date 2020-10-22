@@ -15,7 +15,7 @@ send_grid_usr := SEND_GRID_USER=c24d9e9cb588d3
 send_grid_key := SEND_GRID_API_KEY=11b128ec80a258
 host := HOST=smtp.mailtrap.io
 mail_port := MAIL_PORT=25
-db_url := DATABASE_URL="postgres://postgres:postgres@localhost/bandlokaler_test?sslmode=disable"
+db_url := DATABASE_URL="postgres://postgres:postgres@localhost/project_dinner_dev?sslmode=disable"
 # db_url := DATABASE_URL="postgres://xcizeumdmzsahd:bd31860486d2182540c497365e85644ed39844ca12c030a6a3d79120e668d083@ec2-52-31-233-101.eu-west-1.compute.amazonaws.com:5432/dd6gntnimjqmji"
 
 # Used internally.  Users should pass GOOS and/or GOARCH.
