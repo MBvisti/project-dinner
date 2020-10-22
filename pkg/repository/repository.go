@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"math/rand"
 	"strings"
 
 	"github.com/jinzhu/gorm"
@@ -23,7 +24,134 @@ func NewRepository(db *gorm.DB) *Repository {
 	}
 }
 
-func (r *Repository) CreateRecipe(nR Recipe) error {
+func (r *Repository) GetRandomRecipes() ([]EmailRecipe, error) {
+	numberOfEntries := 0
+	err := r.db.Raw("select count(*) from recipe_tables").Count(&numberOfEntries).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	recipeOneID := uint(rand.Intn(numberOfEntries-1) + 1)
+	recipeTwoID := uint(rand.Intn(numberOfEntries-1) + 1)
+	recipeThreeID := uint(rand.Intn(numberOfEntries-1) + 1)
+	recipeFourID := uint(rand.Intn(numberOfEntries-1) + 1)
+
+	recipeOne := RecipeTable{
+		Model: gorm.Model{
+			ID: recipeOneID,
+		},
+	}
+	recipeTwo := RecipeTable{
+		Model: gorm.Model{
+			ID: recipeTwoID,
+		},
+	}
+	recipeThree := RecipeTable{
+		Model: gorm.Model{
+			ID: recipeThreeID,
+		},
+	}
+	recipeFour := RecipeTable{
+		Model: gorm.Model{
+			ID: recipeFourID,
+		},
+	}
+
+	err = r.db.First(&recipeOne).Error
+
+	if err != nil {
+		return nil, err
+	}
+	err = r.db.First(&recipeTwo).Error
+
+	if err != nil {
+		return nil, err
+	}
+	err = r.db.First(&recipeThree).Error
+
+	if err != nil {
+		return nil, err
+	}
+	err = r.db.First(&recipeFour).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	recipeOneImage := RecipeImageTable{}
+	recipeTwoImage := RecipeImageTable{}
+	recipeThreeImage := RecipeImageTable{}
+	recipeFourImage := RecipeImageTable{}
+
+	err = r.db.Where("recipe_id = ?", recipeOneID).Last(&recipeOneImage).Error
+
+	if err != nil {
+		return nil, err
+	}
+	err = r.db.Where("recipe_id = ?", recipeTwoID).Last(&recipeTwoImage).Error
+
+	if err != nil {
+		return nil, err
+	}
+	err = r.db.Where("recipe_id = ?", recipeThreeID).Last(&recipeThreeImage).Error
+
+	if err != nil {
+		return nil, err
+	}
+	err = r.db.Where("recipe_id = ?", recipeFourID).Last(&recipeFourImage).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	rOne := EmailRecipe{
+		Name:        recipeOne.Name,
+		Description: recipeOne.Description,
+		Category:    recipeOne.Category,
+		Cuisine:     recipeOne.Cuisine,
+		ThumbNail:   recipeOneImage.Image,
+		FoundOn:     recipeOne.FoundOn,
+	}
+
+	rTwo := EmailRecipe{
+		Name:        recipeTwo.Name,
+		Description: recipeTwo.Description,
+		Category:    recipeTwo.Category,
+		Cuisine:     recipeTwo.Cuisine,
+		ThumbNail:   recipeTwoImage.Image,
+		FoundOn:     recipeTwo.FoundOn,
+	}
+
+	rThree := EmailRecipe{
+		Name:        recipeThree.Name,
+		Description: recipeThree.Description,
+		Category:    recipeThree.Category,
+		Cuisine:     recipeThree.Cuisine,
+		ThumbNail:   recipeThreeImage.Image,
+		FoundOn:     recipeThree.FoundOn,
+	}
+
+	rFour := EmailRecipe{
+		Name:        recipeFour.Name,
+		Description: recipeFour.Description,
+		Category:    recipeFour.Category,
+		Cuisine:     recipeFour.Cuisine,
+		ThumbNail:   recipeFourImage.Image,
+		FoundOn:     recipeFour.FoundOn,
+	}
+
+	selectedRecipes := []EmailRecipe{
+		rOne,
+		rTwo,
+		rThree,
+		rFour,
+	}
+
+	return selectedRecipes, nil
+}
+
+func (r *Repository) CreateScrapedRecipe(nR Recipe) error {
 
 	newRecipe := RecipeTable{
 		Category:    nR.Category,
@@ -151,24 +279,13 @@ func (r *Repository) MigrateTables() error {
 	return nil
 }
 
-// func (r *Repository) GetEmailList() ([]EmailList, error) {
-// 	var emailList []EmailList
-// 	err := r.db.Table("users").Select("email, name").Scan(&emailList).Error
+func (r *Repository) GetEmailList() ([]EmailList, error) {
+	var emailList []EmailList
+	err := r.db.Table("user_tables").Select("email, name").Scan(&emailList).Error
 
-// 	if err != nil {
-// 		return nil, err
-// 	}
+	if err != nil {
+		return nil, err
+	}
 
-// 	return emailList, nil
-// }
-
-// func (r *Repository) TodaysRecipes() ([]DailyRecipes, error) {
-// 	var selectedRecipes []DailyRecipes
-// 	err := r.db.Table("daily_recipes").Find(&selectedRecipes).Error
-
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	return selectedRecipes, nil
-// }
+	return emailList, nil
+}
