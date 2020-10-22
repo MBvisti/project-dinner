@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"project-dinner/pkg/repository"
+	repository "project-dinner/pkg/storage"
 	"strconv"
 
 	"gopkg.in/gomail.v2"
@@ -14,8 +14,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// ApiStatus returns the status of the api
-func (s *Server) ApiStatus() gin.HandlerFunc {
+// APIStatus returns the status of the api
+func (s *Server) APIStatus() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Header("Content-Type", "application/json")
 
@@ -89,45 +89,9 @@ func (s *Server) StopCronJob() gin.HandlerFunc {
 	}
 }
 
-// func (s *Server) CreateRecipe() gin.HandlerFunc {
-// 	return func(c *gin.Context) {
-// 		c.Header("Content-Type", "application/json")
-
-// 		var recipe Recipe
-
-// 		err := c.ShouldBindJSON(&recipe)
-
-// 		if err != nil {
-// 			response := map[string]string{
-// 				"status": "failure",
-// 				"data":   "recipe not created",
-// 			}
-// 			c.JSON(http.StatusBadRequest, response)
-// 			return
-// 		}
-
-// 		//err = s.storage.CreateRecipe(&recipe)
-
-// 		if err != nil {
-// 			response := map[string]string{
-// 				"status": "failure",
-// 				"data":   "recipe not created",
-// 			}
-// 			c.JSON(http.StatusInternalServerError, response)
-// 			return
-// 		}
-
-// 		response := map[string]string{
-// 			"status": "success",
-// 			"data":   "recipe created",
-// 		}
-// 		c.JSON(http.StatusOK, response)
-// 	}
-// }
-
-// type AllRecipes struct {
-// 	Recipes []Recipe `json:"recipes"`
-// }
+type AllRecipes struct {
+	Recipes []repository.Recipe `json:"recipes"`
+}
 
 // UserRecipe ... TODO: move this in to a user service at one point
 type UserRecipe struct {
@@ -145,13 +109,13 @@ func (s *Server) SendMails() gin.HandlerFunc {
 
 		var emailList []*gomail.Message
 
-		userList, err := s.storage.GetEmailList()
+		userList, err := s.storage.User.GetEmailList()
 
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"err": err.Error()})
 		}
 
-		recipes, err := s.storage.GetRandomRecipes()
+		recipes, err := s.storage.Recipe.GetRandomRecipes()
 
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"err": err.Error()})
@@ -216,8 +180,7 @@ func (s *Server) CrawlSite() gin.HandlerFunc {
 				continue
 			}
 			returnedData = append(returnedData, res)
-
-			err = s.storage.CreateScrapedRecipe(res)
+			err = s.storage.Recipe.CreateScrapedRecipe(res)
 
 			if err != nil {
 				log.Printf("this is the storage error: %v", err.Error())

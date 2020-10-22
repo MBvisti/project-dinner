@@ -5,7 +5,7 @@ import (
 	"math/rand"
 	"os"
 	app "project-dinner/pkg"
-	"project-dinner/pkg/repository"
+	repository "project-dinner/pkg/storage"
 	"strconv"
 	"time"
 
@@ -48,7 +48,7 @@ func run() error {
 		return err
 	}
 
-	s := repository.NewRepository(database)
+	s := repository.NewStorage(database)
 
 	defer database.Close()
 	s.MigrateTables()

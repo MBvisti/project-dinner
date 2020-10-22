@@ -6,7 +6,8 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"project-dinner/pkg/repository"
+	repository "project-dinner/pkg/storage"
+
 	"reflect"
 	"strconv"
 	"strings"
@@ -21,7 +22,7 @@ import (
 // Server ...
 type Server struct {
 	router  *gin.Engine
-	storage *repository.Repository
+	storage *repository.Services
 	cron    *cron.Cron
 	mailer  *gomail.Dialer
 }
@@ -32,7 +33,7 @@ type Server struct {
 // }
 
 // NewServer returns a new server
-func NewServer(s *repository.Repository, r *gin.Engine, c *cron.Cron, m *gomail.Dialer) Server {
+func NewServer(s *repository.Services, r *gin.Engine, c *cron.Cron, m *gomail.Dialer) Server {
 	return Server{
 		storage: s,
 		router:  r,
