@@ -1,6 +1,9 @@
 package app
 
 import (
+	"bytes"
+	"gopkg.in/gomail.v2"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -190,54 +193,64 @@ func (s *Server) WakeDyno() gin.HandlerFunc {
 // 	}
 // }
 
-// func (s *Server) SendMails() gin.HandlerFunc {
-// 	return func(c *gin.Context) {
-// 		mailTemplate, err := template.ParseFiles("./template/daily_recipe_email.html")
-// 		if err != nil {
-// 			c.JSON(http.StatusInternalServerError, gin.H{"err": err.Error()})
-// 		}
+type UserRecipe struct {
+	UserName string
+	Recipes []repository.EmailRecipe
+}
 
-// 		var emailList []*gomail.Message
+func (s *Server) SendMails() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		mailTemplate, err := template.ParseFiles("./template/daily_recipe_email.html")
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"err": err.Error()})
+		}
 
-// 		userList, err := s.storage.GetEmailList()
+		var emailList []*gomail.Message
 
-// 		if err != nil {
-// 			c.JSON(http.StatusInternalServerError, gin.H{"err": err.Error()})
-// 		}
+		userList, err := s.storage.GetEmailList()
 
-// 		dailyRecipes, err := s.storage.TodaysRecipes()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"err": err.Error()})
+		}
 
-// 		if err != nil {
-// 			c.JSON(http.StatusInternalServerError, gin.H{"err": err.Error()})
-// 		}
+		recipes, err := s.storage.GetRandomRecipes()
 
-// 		for _, user := range userList {
-// 			usrRecipe := UserRecipe{
-// 				UserName: user.Name,
-// 				Recipes:  dailyRecipes,
-// 			}
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"err": err.Error()})
+		}
 
-// 			var t bytes.Buffer
-// 			err = mailTemplate.Execute(&t, usrRecipe)
+		for _, user := range userList {
+			usrRecipe := UserRecipe{
+				UserName: user.Name,
+				Recipes:  recipes,
+			}
 
-// 			mail := gomail.NewMessage()
-// 			mail.SetAddressHeader("From", "noreply@mbvistisen.dk", "Morten's recipe service")
-// 			mail.SetHeader("To", user.Email)
-// 			mail.SetHeader("Subject", "Your daily recipes are here!")
-// 			mail.SetBody("text/html", t.String())
+			var t bytes.Buffer
+			err = mailTemplate.Execute(&t, usrRecipe)
 
-// 			emailList = append(emailList, mail)
-// 		}
+			mail := gomail.NewMessage()
+			mail.SetAddressHeader("From", "noreply@mbvistisen.dk", "Morten's recipe service")
+			mail.SetHeader("To", user.Email)
+			mail.SetHeader("Subject", "Your daily recipes are here!")
+			mail.SetBody("text/html", t.String())
 
-// 		err = s.mailer.DialAndSend(emailList...)
+			emailList = append(emailList, mail)
+		}
 
-// 		if err != nil {
-// 			log.Printf("there was an error sending the mail: %v", err)
-// 		}
+		err = s.mailer.DialAndSend(emailList...)
 
-// 		c.JSON(http.StatusOK, "")
-// 	}
-// }
+		if err != nil {
+			log.Printf("there was an error sending the mail: %v", err.Error())
+		}
+
+		response := map[string]interface{}{
+			"status": "success",
+			"response":   "all email sent",
+		}
+		c.JSON(http.StatusOK, response)
+
+	}
+}
 
 func (s *Server) CrawlSite() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -265,7 +278,7 @@ func (s *Server) CrawlSite() gin.HandlerFunc {
 			}
 			returnedData = append(returnedData, res)
 
-			err = s.storage.CreateRecipe(res)
+			err = s.storage.CreateScrapedRecipe(res)
 
 			if err != nil {
 				log.Printf("this is the storage error: %v", err.Error())
