@@ -2,12 +2,12 @@ package app
 
 import (
 	"bytes"
+	"fmt"
 	"html/template"
 	"log"
 	"net/http"
 	"os"
 	"project-dinner/pkg/repository"
-	"strconv"
 
 	"gopkg.in/gomail.v2"
 
@@ -145,33 +145,62 @@ func (s *Server) SendMails() gin.HandlerFunc {
 	}
 }
 
-// CrawlSite endpint gets all links to a recipe on the clean eating couple, scrape the recipe and stores it in db
-func (s *Server) CrawlSite() gin.HandlerFunc {
+// ScrapeParams are the parameters needed by the scraper function
+type ScrapeParams struct {
+	BaseURL         string `json:"base_url"`
+	LinkSearchParam string `json:"link_search_param"`
+	DomainGlob      string `json:"domain_glob"`
+}
+
+// TODO: Leaving for reference
+// {
+//     "base_url": "https://thecleaneatingcouple.com/category/recipes/lunch-dinner/page/",
+//     "link_search_param": "a[class='entry-image-link']",
+//     "domain_glob": "https://thecleaneatingcouple.com/*"
+// }
+
+// ScrapeSite endpoint gets all links to a recipe on the clean eating couple, scrape the recipe and stores it in db
+func (s *Server) ScrapeSite() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Header("Content-Type", "application/json")
 
-		pages := 10
+		var sp ScrapeParams
+		err := c.ShouldBindJSON(&sp)
+
+		if err != nil {
+			response := map[string]interface{}{
+				"status":   "failure",
+				"response": "something went wrong",
+			}
+			c.JSON(http.StatusInternalServerError, response)
+			return
+		}
+
+		pages := 2
 		var links []string
-		baseURL := "https://thecleaneatingcouple.com/category/recipes/lunch-dinner/page/"
+		baseURL := sp.BaseURL
 
 		for page := 1; page < pages; page++ {
-			newLinks := s.CrawlUrls(baseURL + strconv.Itoa(page))
+			newLinks := s.FindLinks(baseURL, sp.LinkSearchParam, sp.DomainGlob)
 			links = append(links, newLinks...)
 		}
 
+		fmt.Print(links)
+
 		var returnedData []repository.Recipe
 		for _, link := range links {
-			res, err := s.Crawler(link)
+			res, err := s.ScrapeRecipe(link, "script[type='application/ld+json']")
 			if err != nil {
-				log.Printf("this is the crawler error: %v", err.Error())
-				continue
+				c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+				return
 			}
 
 			if res.Description == "" {
 				continue
 			}
-			returnedData = append(returnedData, res)
-			err = s.storage.Recipe.CreateScrapedRecipe(res)
+			returnedData = append(returnedData, *res)
+			fmt.Printf("this is the recipe: %v", res)
+			err = s.storage.Recipe.CreateScrapedRecipe(*res)
 
 			if err != nil {
 				log.Printf("this is the storage error: %v", err.Error())
