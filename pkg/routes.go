@@ -11,7 +11,7 @@ func (s *Server) routes() *gin.Engine {
 		v1.POST("/database-reset", s.ResetDatabase())
 		v1.POST("/stop-cron", s.StopCronJob())
 		v1.GET("/send-mails", s.SendMails())
-		v1.GET("/start-scraping-procedure", s.CrawlSite())
+		v1.POST("/start-scraping-procedure", s.ScrapeSite())
 	}
 
 	return r
