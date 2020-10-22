@@ -200,8 +200,8 @@ func (s *Server) CrawlUrls(pageUrl string) []string {
 	crawler := colly.NewCollector()
 
 	crawler.Limit(&colly.LimitRule{
-		DomainGlob: "https://thecleaneatingcouple.com/*",
-		RandomDelay:      4 * time.Second,
+		DomainGlob:  "https://thecleaneatingcouple.com/*",
+		RandomDelay: 4 * time.Second,
 	})
 
 	// Before making a request print "Visiting ..."
@@ -227,8 +227,8 @@ func (s *Server) Crawler(url string) (repository.Recipe, error) {
 	crawler := colly.NewCollector()
 
 	crawler.Limit(&colly.LimitRule{
-		DomainGlob: "https://thecleaneatingcouple.com/*",
-		RandomDelay:     5 * time.Second,
+		DomainGlob:  "https://thecleaneatingcouple.com/*",
+		RandomDelay: 5 * time.Second,
 	})
 
 	var crawlerResult Base
