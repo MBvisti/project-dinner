@@ -17,6 +17,7 @@ COPY go.sum go.mod ./
 RUN go mod download
 
 COPY cmd ./cmd
+COPY pkg ./pkg
 COPY template ./template
 
 RUN GOOS=linux GOARCH=amd64 go build -ldflags "-X main.version=${VERSION} -s -w" -a -o main cmd/server/main.go

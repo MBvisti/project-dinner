@@ -5,7 +5,7 @@ import (
 	"math/rand"
 	"os"
 	app "project-dinner/pkg"
-	repository "project-dinner/pkg/storage"
+	"project-dinner/pkg/repository"
 	"strconv"
 	"time"
 

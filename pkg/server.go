@@ -7,7 +7,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
-	repository "project-dinner/pkg/storage"
+	"project-dinner/pkg/repository"
 
 	"reflect"
 	"strconv"

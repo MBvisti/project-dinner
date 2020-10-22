@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
-	repository "project-dinner/pkg/storage"
+	"project-dinner/pkg/repository"
 	"strconv"
 
 	"gopkg.in/gomail.v2"
