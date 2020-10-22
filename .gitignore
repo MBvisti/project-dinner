@@ -1,5 +1,7 @@
-
+# Goland ignores
 .idea/workspace.xml
 .idea/vcs.xml
 .idea/project-dinner.iml
 .idea/modules.xml
+
+vendor/
