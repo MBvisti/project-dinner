@@ -7,7 +7,6 @@ import (
 	"html/template"
 	"log"
 	"net/http"
-	"os"
 	repository "project-dinner/pkg/storage"
 
 	"reflect"
@@ -47,19 +46,6 @@ func (s *Server) Run(addr string) error {
 	if err != nil {
 		log.Printf("this is err from cronjob: %v", err)
 		return err
-	}
-
-	// TODO: change this when no longer needed
-	isStaging, err := strconv.ParseBool(os.Getenv("IS_STAGING"))
-	if err != nil {
-		return err
-	}
-
-	if isStaging {
-		err = s.storage.DestructiveReset()
-		if err != nil {
-			return err
-		}
 	}
 
 	log.Printf("Starting the server on: %v", addr)
