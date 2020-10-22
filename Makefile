@@ -3,7 +3,7 @@ PKG := project-dinner/pkg
 PKG_LIST := $(shell go list ${PKG}/...)
 
 # This version-strategy uses a manual value to set the version string
-VERSION := 0.0.11
+VERSION := 0.0.12
 BUILD_ENV := "production"
 APP_NAME_STAGING := project-dinner-staging
 APP_NAME_PRODUCTION := project-dinner-production
@@ -14,13 +14,13 @@ REGISTRY ?= mbvofdocker
 SRC_DIRS := cmd pkg # directories which hold app source (not vendored)
 
 dev_mode := DEVELOPMENT_MODE=true
-send_grid_usr := SEND_GRID_USER=00d529b7247ff7
-send_grid_key := SEND_GRID_API_KEY=84af903e641a55
+send_grid_usr := SEND_GRID_USER=c24d9e9cb588d3
+send_grid_key := SEND_GRID_API_KEY=11b128ec80a258
 host := HOST=smtp.mailtrap.io
 mail_port := MAIL_PORT=25
-is_staging := IS_STAGING=true
+is_staging := IS_STAGING=false
 db_url := DATABASE_URL="postgres://postgres:postgres@localhost/bandlokaler_test?sslmode=disable"
-
+#db_url := DATABASE_URL="postgres://xcizeumdmzsahd:bd31860486d2182540c497365e85644ed39844ca12c030a6a3d79120e668d083@ec2-52-31-233-101.eu-west-1.compute.amazonaws.com:5432/dd6gntnimjqmji"
 # Used internally.  Users should pass GOOS and/or GOARCH.
 OS := $(if $(GOOS),$(GOOS),$(shell go env GOOS))
 ARCH := $(if $(GOARCH),$(GOARCH),$(shell go env GOARCH))
@@ -41,7 +41,7 @@ dev:
 	air
 
 run-dev:
-	./start.sh ${dev_mode} ${send_grid_usr} ${send_grid_key} ${host mail_port} ${is_staging} ${db_url}
+	./start.sh ${dev_mode} ${send_grid_usr} ${send_grid_key} ${host} ${mail_port} ${is_staging} ${db_url}
 
 # Work around for connecting to DB on host when running the app in docker
 dev-build: vet format
