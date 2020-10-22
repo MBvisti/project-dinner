@@ -13,7 +13,7 @@ func (s *Server) routes() *gin.Engine {
 		// v1.POST("/recipe", s.CreateRecipe())
 		v1.GET("/wakey-wakey", s.WakeDyno())
 		// v1.GET("/random-recipes", s.GetFourRandomRecipes())
-		// v1.GET("/send-mails", s.SendMails())
+		v1.GET("/send-mails", s.SendMails())
 		// v1.GET("/users", s.EmailList())
 		v1.GET("/start-scraping-procedure", s.CrawlSite())
 	}
