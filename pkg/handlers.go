@@ -8,11 +8,17 @@ import (
 	"os"
 	"project-dinner/pkg/repository"
 	"strconv"
+	"strings"
 
 	"gopkg.in/gomail.v2"
 
 	"github.com/gin-gonic/gin"
 )
+
+type handlerResponse struct {
+	Status string      `json:"status"`
+	Data   interface{} `json:"data"`
+}
 
 // APIStatus returns the status of the api
 func (s *Server) APIStatus() gin.HandlerFunc {
@@ -184,5 +190,40 @@ func (s *Server) CrawlSite() gin.HandlerFunc {
 			"response": "site successfully crawled",
 		}
 		c.JSON(http.StatusOK, response)
+	}
+}
+
+// NewUser ....
+type NewUser struct {
+	Name     string `json:"name"`
+	Email    string `json:"email"`
+	TimeZone string `json:"time_zone"`
+}
+
+// SignupUser endpoint
+func (s *Server) SignupUser() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Header("Content-Type", "application/json")
+
+		var user repository.NewUser
+
+		err := c.ShouldBindJSON(&user)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, handlerResponse{Status: "failure", Data: "user data no good"})
+			return
+		}
+
+		user.Email = strings.ToLower(user.Email)
+		user.Name = strings.ToLower(user.Name)
+
+		err = s.storage.User.CreateUser(user)
+
+		if err != nil {
+
+			c.JSON(http.StatusBadRequest, handlerResponse{Status: "failure", Data: err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, handlerResponse{Status: "success", Data: "user created"})
 	}
 }
