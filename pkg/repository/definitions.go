@@ -1,6 +1,8 @@
 package repository
 
-import "github.com/jinzhu/gorm"
+import (
+	"github.com/jinzhu/gorm"
+)
 
 /*
 	This is the table definitions
