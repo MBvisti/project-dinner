@@ -31,7 +31,7 @@ func (r *recipeService) GetRandomRecipes() ([]EmailRecipe, error) {
 	err := r.db.Raw("select count(*) from recipes").Count(&numberOfEntries).Error
 
 	if err != nil {
-		return nil, err
+		return nil, ErrNoData
 	}
 
 	if numberOfEntries == 0 {
@@ -67,22 +67,22 @@ func (r *recipeService) GetRandomRecipes() ([]EmailRecipe, error) {
 	err = r.db.First(&recipeOne).Error
 
 	if err != nil {
-		return nil, err
+		return nil, ErrNoResourceFound
 	}
 	err = r.db.First(&recipeTwo).Error
 
 	if err != nil {
-		return nil, err
+		return nil, ErrNoResourceFound
 	}
 	err = r.db.First(&recipeThree).Error
 
 	if err != nil {
-		return nil, err
+		return nil, ErrNoResourceFound
 	}
 	err = r.db.First(&recipeFour).Error
 
 	if err != nil {
-		return nil, err
+		return nil, ErrNoResourceFound
 	}
 
 	recipeOneImage := recipeImage{}
@@ -93,22 +93,22 @@ func (r *recipeService) GetRandomRecipes() ([]EmailRecipe, error) {
 	err = r.db.Where("recipe_id = ?", recipeOneID).Last(&recipeOneImage).Error
 
 	if err != nil {
-		return nil, err
+		return nil, ErrNoResourceFound
 	}
 	err = r.db.Where("recipe_id = ?", recipeTwoID).Last(&recipeTwoImage).Error
 
 	if err != nil {
-		return nil, err
+		return nil, ErrNoResourceFound
 	}
 	err = r.db.Where("recipe_id = ?", recipeThreeID).Last(&recipeThreeImage).Error
 
 	if err != nil {
-		return nil, err
+		return nil, ErrNoResourceFound
 	}
 	err = r.db.Where("recipe_id = ?", recipeFourID).Last(&recipeFourImage).Error
 
 	if err != nil {
-		return nil, err
+		return nil, ErrNoResourceFound
 	}
 
 	rOne := EmailRecipe{
@@ -172,7 +172,7 @@ func (r *recipeService) CreateScrapedRecipe(nR Recipe) error {
 	err := r.db.Create(&newRecipe).Error
 
 	if err != nil {
-		return err
+		return ErrNoCreate
 	}
 
 	for _, img := range nR.Images {
@@ -184,7 +184,7 @@ func (r *recipeService) CreateScrapedRecipe(nR Recipe) error {
 		err = r.db.Create(&newImage).Error
 
 		if err != nil {
-			return err
+			return ErrNoCreate
 		}
 	}
 
@@ -197,7 +197,7 @@ func (r *recipeService) CreateScrapedRecipe(nR Recipe) error {
 		err = r.db.Create(&newInstruction).Error
 
 		if err != nil {
-			return err
+			return ErrNoCreate
 		}
 	}
 
@@ -209,7 +209,7 @@ func (r *recipeService) CreateScrapedRecipe(nR Recipe) error {
 		err = r.db.Create(&newIngredient).Error
 
 		if err != nil {
-			return err
+			return ErrNoCreate
 		}
 	}
 
@@ -222,7 +222,7 @@ func (r *recipeService) CreateScrapedRecipe(nR Recipe) error {
 	err = r.db.Create(&newRating).Error
 
 	if err != nil {
-		return err
+		return ErrNoCreate
 	}
 
 	for _, keyWord := range nR.Keywords {
@@ -233,7 +233,7 @@ func (r *recipeService) CreateScrapedRecipe(nR Recipe) error {
 		err = r.db.Create(&newKeyword).Error
 
 		if err != nil {
-			return err
+			return ErrNoCreate
 		}
 	}
 

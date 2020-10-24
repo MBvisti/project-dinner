@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"errors"
 	"regexp"
 
 	"github.com/jinzhu/gorm"
@@ -18,13 +17,6 @@ type userService struct {
 	db *gorm.DB
 }
 
-var (
-	// ErrEmailInvalid ...
-	ErrEmailInvalid = errors.New("repo - email not valid")
-	// ErrEmailRequired ...
-	ErrEmailRequired = errors.New("repo - email is required")
-)
-
 // NewUserService ...
 func NewUserService(db *gorm.DB) UserService {
 	return &userService{
@@ -38,7 +30,7 @@ func (r *userService) GetEmailList() ([]UserEmail, error) {
 	err := r.db.Table("users").Select("email, name").Scan(&emailList).Error
 
 	if err != nil {
-		return nil, err
+		return nil, ErrNoResourceFound
 	}
 
 	return emailList, nil
@@ -71,7 +63,7 @@ func (r *userService) CreateUser(usr NewUser) error {
 	err := r.db.Create(&nU).Error
 
 	if err != nil {
-		return err
+		return ErrNoCreate
 	}
 
 	return nil

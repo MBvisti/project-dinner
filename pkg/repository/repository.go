@@ -25,7 +25,15 @@ func NewStorage(db *gorm.DB) *Services {
 
 var (
 	// ErrNoData is returned when there is no data in a given table
-	ErrNoData = errors.New("repo: no data for the requested resource")
+	ErrNoData = errors.New("repo - no data for the requested resource")
+	// ErrEmailInvalid is returned when the provided email doesn't pass the regex validation
+	ErrEmailInvalid = errors.New("repo - email not valid")
+	// ErrEmailRequired is returned when the email is empty/non-existent
+	ErrEmailRequired = errors.New("repo - email is required")
+	// ErrNoResourceFound is returned when a query couldn't be performed
+	ErrNoResourceFound = errors.New("repo - resource doesn't exists")
+	// ErrNoCreate ...
+	ErrNoCreate = errors.New("repo - couldn't create the resource")
 )
 
 // DestructiveReset resets the database and and creates two users
