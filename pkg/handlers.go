@@ -25,12 +25,7 @@ func (s *Server) APIStatus() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Header("Content-Type", "application/json")
 
-		response := map[string]string{
-			"status": "success",
-			"data":   "project dinner api running super smootly",
-		}
-
-		c.JSON(http.StatusOK, response)
+		c.JSON(http.StatusOK, handlerResponse{Status: "success", Data: "project dinner api running smoothly"})
 	}
 }
 
@@ -41,33 +36,19 @@ func (s *Server) ResetDatabase() gin.HandlerFunc {
 
 		whatEnv := os.Getenv("WHAT_ENVIRONMENT_IS_THIS")
 
-		if whatEnv != "development" {
-			response := map[string]string{
-				"status": "failure",
-				"data":   "don't reset the db in production idiot",
-			}
-
-			c.JSON(http.StatusBadRequest, response)
+		if whatEnv == "production" {
+			c.JSON(http.StatusBadRequest, handlerResponse{Status: "failure", Data: "don't reset the database in production, idiot"})
 			return
 		}
 
 		err := s.storage.DestructiveReset()
 
 		if err != nil {
-			response := map[string]string{
-				"status": "failure",
-				"data":   "couldn't reset the database",
-			}
-
-			c.JSON(http.StatusInternalServerError, response)
+			c.JSON(http.StatusInternalServerError, handlerResponse{Status: "failure", Data: err.Error()})
 			return
 		}
 
-		response := map[string]string{
-			"status": "success",
-			"data":   "reset the database",
-		}
-		c.JSON(http.StatusOK, response)
+		c.JSON(http.StatusOK, handlerResponse{Status: "success", Data: "successfully reset the database"})
 	}
 }
 
@@ -78,14 +59,11 @@ func (s *Server) StopCronJob() gin.HandlerFunc {
 
 		s.cron.Stop()
 
-		response := map[string]string{
-			"status": "success",
-			"data":   "cron job stopped",
-		}
-		c.JSON(http.StatusOK, response)
+		c.JSON(http.StatusOK, handlerResponse{Status: "success", Data: "the cron job is stopped"})
 	}
 }
 
+// AllRecipes ...
 type AllRecipes struct {
 	Recipes []repository.Recipe `json:"recipes"`
 }
@@ -101,7 +79,8 @@ func (s *Server) SendMails() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		mailTemplate, err := template.ParseFiles("./template/daily_recipe_email.html")
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"err": err.Error()})
+			c.JSON(http.StatusInternalServerError, handlerResponse{Status: "failure", Data: err.Error()})
+			return
 		}
 
 		var emailList []*gomail.Message
@@ -109,13 +88,15 @@ func (s *Server) SendMails() gin.HandlerFunc {
 		userList, err := s.storage.User.GetEmailList()
 
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"err": err.Error()})
+			c.JSON(http.StatusInternalServerError, handlerResponse{Status: "failure", Data: err.Error()})
+			return
 		}
 
 		recipes, err := s.storage.Recipe.GetRandomRecipes()
 
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"err": err.Error()})
+			c.JSON(http.StatusInternalServerError, handlerResponse{Status: "failure", Data: err.Error()})
+			return
 		}
 
 		for _, user := range userList {
@@ -139,14 +120,11 @@ func (s *Server) SendMails() gin.HandlerFunc {
 		err = s.mailer.DialAndSend(emailList...)
 
 		if err != nil {
-			log.Printf("there was an error sending the mail: %v", err.Error())
+			c.JSON(http.StatusInternalServerError, handlerResponse{Status: "failure", Data: err.Error()})
+			return
 		}
 
-		response := map[string]interface{}{
-			"status":   "success",
-			"response": "all email sent",
-		}
-		c.JSON(http.StatusOK, response)
+		c.JSON(http.StatusOK, handlerResponse{Status: "success", Data: "all emails sent"})
 
 	}
 }
@@ -185,11 +163,7 @@ func (s *Server) CrawlSite() gin.HandlerFunc {
 			}
 		}
 
-		response := map[string]interface{}{
-			"status":   "success",
-			"response": "site successfully crawled",
-		}
-		c.JSON(http.StatusOK, response)
+		c.JSON(http.StatusOK, handlerResponse{Status: "success", Data: "website crawled"})
 	}
 }
 
@@ -219,7 +193,6 @@ func (s *Server) SignupUser() gin.HandlerFunc {
 		err = s.storage.User.CreateUser(user)
 
 		if err != nil {
-
 			c.JSON(http.StatusBadRequest, handlerResponse{Status: "failure", Data: err.Error()})
 			return
 		}
