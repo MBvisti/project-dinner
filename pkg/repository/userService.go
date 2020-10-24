@@ -1,16 +1,29 @@
 package repository
 
-import "github.com/jinzhu/gorm"
+import (
+	"errors"
+	"regexp"
+
+	"github.com/jinzhu/gorm"
+)
 
 // UserService ...
 type UserService interface {
 	GetEmailList() ([]UserEmail, error)
+	CreateUser(usr NewUser) error
 }
 
 type userService struct {
 	uS UserService
 	db *gorm.DB
 }
+
+var (
+	// ErrEmailInvalid ...
+	ErrEmailInvalid = errors.New("repo - email not valid")
+	// ErrEmailRequired ...
+	ErrEmailRequired = errors.New("repo - email is required")
+)
 
 // NewUserService ...
 func NewUserService(db *gorm.DB) UserService {
@@ -29,4 +42,37 @@ func (r *userService) GetEmailList() ([]UserEmail, error) {
 	}
 
 	return emailList, nil
+}
+
+var isMailValid = regexp.MustCompile(
+	`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,16}$`)
+
+type NewUser struct {
+	Name     string `json:"name"`
+	Email    string `json:"email"`
+	TimeZone string `json:"time_zone"`
+}
+
+// CreateUser ...
+func (r *userService) CreateUser(usr NewUser) error {
+	if usr.Email == "" {
+		return ErrEmailRequired
+	}
+
+	if !isMailValid.MatchString(usr.Email) {
+		return ErrEmailInvalid
+	}
+
+	nU := user{
+		Name:  usr.Name,
+		Email: usr.Email,
+	}
+
+	err := r.db.Create(&nU).Error
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
