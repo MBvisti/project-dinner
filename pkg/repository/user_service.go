@@ -1,15 +1,16 @@
 package repository
 
 import (
-	"regexp"
-
 	"github.com/jinzhu/gorm"
+	service "project-dinner/pkg/services"
+	"regexp"
 )
 
 // UserService ...
 type UserService interface {
-	GetEmailList() ([]UserEmail, error)
-	CreateUser(usr NewUser) error
+	GetEmailList() ([]service.User, error)
+	CreateUser(usr service.User) error
+	GetResponse() string
 }
 
 type userService struct {
@@ -24,9 +25,13 @@ func NewUserService(db *gorm.DB) UserService {
 	}
 }
 
+func (r *userService) GetResponse() string {
+	return "HELLO HELLO"
+}
+
 // GetEmailList returns the email list - TODO: maybe separate the user list and emailing list into two different tables?
-func (r *userService) GetEmailList() ([]UserEmail, error) {
-	var emailList []UserEmail
+func (r *userService) GetEmailList() ([]service.User, error) {
+	var emailList []service.User
 	err := r.db.Table("users").Select("email, name").Scan(&emailList).Error
 
 	if err != nil {
@@ -39,14 +44,8 @@ func (r *userService) GetEmailList() ([]UserEmail, error) {
 var isMailValid = regexp.MustCompile(
 	`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,16}$`)
 
-type NewUser struct {
-	Name     string `json:"name"`
-	Email    string `json:"email"`
-	TimeZone string `json:"time_zone"`
-}
-
 // CreateUser ...
-func (r *userService) CreateUser(usr NewUser) error {
+func (r *userService) CreateUser(usr service.User) error {
 	if usr.Email == "" {
 		return ErrEmailRequired
 	}

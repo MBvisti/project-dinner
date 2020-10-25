@@ -2,6 +2,7 @@ package repository
 
 import (
 	"math/rand"
+	service "project-dinner/pkg/services"
 	"strings"
 
 	"github.com/jinzhu/gorm"
@@ -9,8 +10,9 @@ import (
 
 // RecipeService ...
 type RecipeService interface {
-	GetRandomRecipes() ([]EmailRecipe, error)
+	GetDailyRecipes() ([]service.EmailRecipe, error)
 	CreateScrapedRecipe(nR Recipe) error
+	CreateRecipe(usr service.Recipe) error
 }
 
 type recipeService struct {
@@ -25,8 +27,12 @@ func NewRecipeService(db *gorm.DB) RecipeService {
 	}
 }
 
+func (r recipeService) CreateRecipe(usr service.Recipe) error {
+	panic("implement me")
+}
+
 // GetRandomRecipes ...
-func (r *recipeService) GetRandomRecipes() ([]EmailRecipe, error) {
+func (r *recipeService) GetDailyRecipes() ([]service.EmailRecipe, error) {
 	numberOfEntries := 0
 	err := r.db.Raw("select count(*) from recipes").Count(&numberOfEntries).Error
 
@@ -111,7 +117,7 @@ func (r *recipeService) GetRandomRecipes() ([]EmailRecipe, error) {
 		return nil, ErrNoResourceFound
 	}
 
-	rOne := EmailRecipe{
+	rOne := service.EmailRecipe{
 		Name:        recipeOne.Name,
 		Description: recipeOne.Description,
 		Category:    recipeOne.Category,
@@ -120,7 +126,7 @@ func (r *recipeService) GetRandomRecipes() ([]EmailRecipe, error) {
 		FoundOn:     recipeOne.FoundOn,
 	}
 
-	rTwo := EmailRecipe{
+	rTwo := service.EmailRecipe{
 		Name:        recipeTwo.Name,
 		Description: recipeTwo.Description,
 		Category:    recipeTwo.Category,
@@ -129,7 +135,7 @@ func (r *recipeService) GetRandomRecipes() ([]EmailRecipe, error) {
 		FoundOn:     recipeTwo.FoundOn,
 	}
 
-	rThree := EmailRecipe{
+	rThree := service.EmailRecipe{
 		Name:        recipeThree.Name,
 		Description: recipeThree.Description,
 		Category:    recipeThree.Category,
@@ -138,7 +144,7 @@ func (r *recipeService) GetRandomRecipes() ([]EmailRecipe, error) {
 		FoundOn:     recipeThree.FoundOn,
 	}
 
-	rFour := EmailRecipe{
+	rFour := service.EmailRecipe{
 		Name:        recipeFour.Name,
 		Description: recipeFour.Description,
 		Category:    recipeFour.Category,
@@ -147,7 +153,7 @@ func (r *recipeService) GetRandomRecipes() ([]EmailRecipe, error) {
 		FoundOn:     recipeFour.FoundOn,
 	}
 
-	selectedRecipes := []EmailRecipe{
+	selectedRecipes := []service.EmailRecipe{
 		rOne,
 		rTwo,
 		rThree,
