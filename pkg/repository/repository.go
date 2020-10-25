@@ -2,7 +2,6 @@ package repository
 
 import (
 	"errors"
-
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
