@@ -2,21 +2,18 @@ package main
 
 import (
 	"fmt"
+	"github.com/gocolly/colly/v2"
 	"log"
-	"math/rand"
 	"net/http"
 	"os"
 	"project-dinner/pkg/repository"
 
-	"project-dinner/pkg/api"
-	"project-dinner/pkg/rest"
-	"strconv"
-	"time"
-
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	"gopkg.in/gomail.v2"
+	"project-dinner/pkg/api"
+	"project-dinner/pkg/rest"
+	"strconv"
 )
 
 func main() {
@@ -27,7 +24,7 @@ func main() {
 }
 
 func run() error {
-	//port := os.Getenv("PORT")
+	port := os.Getenv("PORT")
 	whatEnv := os.Getenv("WHAT_ENVIRONMENT_IS_THIS")
 	sendGridUser := os.Getenv("SEND_GRID_USER")
 	sendGridPassword := os.Getenv("SEND_GRID_API_KEY")
@@ -35,54 +32,44 @@ func run() error {
 	connectionString := os.Getenv("DATABASE_URL")
 	mailPort, err := strconv.Atoi(os.Getenv("MAIL_PORT"))
 
-	//gin.SetMode(gin.ReleaseMode)
+	gin.SetMode(gin.ReleaseMode)
 
-	gin.SetMode(gin.DebugMode)
-	//if whatEnv == "development" {
-	//	port = "5000"
-	//	gin.SetMode(gin.DebugMode)
-	//}
-
-	r := gin.Default()
-	r.Use(cors.Default())
+	if whatEnv == "development" {
+		port = "5000"
+		gin.SetMode(gin.DebugMode)
+	}
 
 	database, err := setupDatabase(connectionString, whatEnv)
+	defer database.Close()
 
 	if err != nil {
 		return err
 	}
 
 	s := repository.NewStorage(database)
+	err = s.MigrateTables()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	m := gomail.NewDialer(mailHost, mailPort, sendGridUser, sendGridPassword)
 
 	usrService := api.NewUserService(s)
 	emailService := api.NewEmailService(m, s)
+	spiderService := api.NewSpiderService(m, setupCrawler())
 
-	router := rest.Routes(usrService, emailService)
-	log.Printf("starting server on: 8080")
-	log.Fatal(http.ListenAndServe(":8080", router))
-
-	defer database.Close()
-	//s.MigrateTables()
+	router := rest.Routes(usrService, emailService, spiderService)
+	log.Printf("starting server on: " + port)
+	log.Fatal(http.ListenAndServe(":"+port, router))
 
 	//t, err := time.LoadLocation("Europe/Copenhagen")
 
-	if err != nil {
-		return err
-	}
+	//if err != nil {
+	//	return err
+	//}
 
 	//c := cron.New(cron.WithLocation(t))
-
-	//server := app.NewServer(s, r, c, m)
-	//
-	//err = server.Run(":" + port)
-
-	if err != nil {
-		return err
-	}
-
-	// seed random generator used to pick the emails
-	rand.Seed(time.Now().UTC().UnixNano())
 
 	return nil
 }
@@ -99,4 +86,10 @@ func setupDatabase(connectionInfo string, environment string) (*gorm.DB, error) 
 	}
 
 	return db, nil
+}
+
+func setupCrawler() *colly.Collector {
+	c := colly.NewCollector()
+
+	return c
 }
