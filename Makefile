@@ -15,8 +15,8 @@ send_grid_usr := SEND_GRID_USER=c24d9e9cb588d3
 send_grid_key := SEND_GRID_API_KEY=11b128ec80a258
 host := HOST=smtp.mailtrap.io
 mail_port := MAIL_PORT=25
-db_url := DATABASE_URL="postgres://postgres:postgres@localhost/project_dinner_dev?sslmode=disable"
-# db_url := DATABASE_URL="postgres://xcizeumdmzsahd:bd31860486d2182540c497365e85644ed39844ca12c030a6a3d79120e668d083@ec2-52-31-233-101.eu-west-1.compute.amazonaws.com:5432/dd6gntnimjqmji"
+dev_db_url := DATABASE_URL="postgres://postgres:postgres@localhost/project_dinner_dev?sslmode=disable"
+test_db_url := "postgres://postgres:postgres@host.docker.internal/project_dinner_test?sslmode=disable"
 
 # Used internally.  Users should pass GOOS and/or GOARCH.
 OS := $(if $(GOOS),$(GOOS),$(shell go env GOOS))
@@ -51,6 +51,7 @@ test: vet $(BUILD_DIRS)
             	        ARCH=$(ARCH)                                \
             	        OS=$(OS)                                    \
             	        VERSION=$(VERSION)                          \
+            	        DATABASE_URL=${test_db_url}					\
             	        ./build/test.sh $(SRC_DIRS)                 \
             	    "
 
@@ -71,7 +72,7 @@ format:
 
 
 run-dev:
-	./start.sh ${what_env} ${send_grid_usr} ${send_grid_key} ${host} ${mail_port} ${is_staging} ${db_url}
+	./start.sh ${what_env} ${send_grid_usr} ${send_grid_key} ${host} ${mail_port} ${is_staging} ${dev_db_url}
 
 # Makes a build for production - all of this is used for heroku
 # container: vet format test
