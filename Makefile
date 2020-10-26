@@ -67,7 +67,7 @@ vet:
 	@go vet ${PKG_LIST}
 
 format:
-	go fmt ./...
+	@go fmt ./...
 
 
 run-dev:
