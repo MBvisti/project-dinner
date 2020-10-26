@@ -3,7 +3,7 @@
 set -o errexit
 set -o nounset
 # shellcheck disable=SC2039
-set -o pipefail
+#set -o pipefail
 
 export CGO_ENABLED=0
 export GO111MODULE=on
