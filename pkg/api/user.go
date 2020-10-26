@@ -1,4 +1,4 @@
-package service
+package api
 
 // User ....
 type User struct {
@@ -6,6 +6,6 @@ type User struct {
 	Email string `json:"email"`
 }
 
-type Recipe struct {
-	Name string
-}
+//type Recipe struct {
+//	Name string
+//}

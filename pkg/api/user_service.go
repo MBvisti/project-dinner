@@ -1,4 +1,4 @@
-package service
+package api
 
 import (
 	"strings"
@@ -9,23 +9,29 @@ type UserService interface {
 	CreateUser(u User) error
 }
 
+// Repository ...
+type UserRepository interface {
+	CreateUser(usr User) error
+}
+
 type userService struct {
-	app *App
+	storage UserRepository
 }
 
 // NewUserService ...
-func NewUserService(a *App) UserService {
+func NewUserService(r UserRepository) UserService {
 	return &userService{
-		a,
+		r,
 	}
 }
 
 func (s *userService) CreateUser(u User) error {
 	var newUser User
+
 	newUser.Email = strings.ToLower(u.Email)
 	newUser.Name = strings.ToLower(u.Name)
 
-	err := s.app.uR.CreateUser(newUser)
+	err := s.storage.CreateUser(newUser)
 
 	if err != nil {
 		return err

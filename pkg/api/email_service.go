@@ -1,4 +1,4 @@
-package service
+package api
 
 import (
 	"bytes"
@@ -13,14 +13,22 @@ type EmailService interface {
 	SendRecipes() error
 }
 
+// EmailRepository ...
+type EmailRepository interface {
+	GetDailyRecipes() ([]EmailRecipe, error)
+	GetEmailList() ([]User, error)
+}
+
 type emailService struct {
-	app *App
+	mailProvider *gomail.Dialer
+	storage      EmailRepository
 }
 
 // NewEmailService ...
-func NewEmailService(a *App) EmailService {
+func NewEmailService(mp *gomail.Dialer, r EmailRepository) EmailService {
 	return &emailService{
-		app: a,
+		mp,
+		r,
 	}
 }
 
@@ -30,13 +38,13 @@ func (e *emailService) SendRecipes() error {
 		return err
 	}
 
-	dailyRecipes, err := e.app.rR.GetDailyRecipes()
+	dailyRecipes, err := e.storage.GetDailyRecipes()
 
 	if err != nil {
 		return err
 	}
 
-	emailList, err := e.app.uR.GetEmailList()
+	emailList, err := e.storage.GetEmailList()
 
 	if err != nil {
 		return err
@@ -58,7 +66,7 @@ func (e *emailService) SendRecipes() error {
 		mail.SetHeader("Subject", "Your daily recipes are here!")
 		mail.SetBody("text/html", t.String())
 
-		err = e.app.mailProvider.DialAndSend(mail)
+		err = e.mailProvider.DialAndSend(mail)
 
 		if err != nil {
 			return err
