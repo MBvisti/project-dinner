@@ -3,7 +3,7 @@ package rest
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
-	service "project-dinner/pkg/services"
+	service "project-dinner/pkg/api"
 )
 
 type handlerResponse struct {
