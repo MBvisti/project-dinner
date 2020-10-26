@@ -3,7 +3,7 @@ PKG := project-dinner/pkg
 PKG_LIST := $(shell go list ${PKG}/...)
 
 # This version-strategy uses a manual value to set the version string
-VERSION := 0.1.0
+VERSION := 0.1.1
 
 # Where to push the docker image.
 REGISTRY ?= mbvofdocker
@@ -22,7 +22,7 @@ db_url := DATABASE_URL="postgres://postgres:postgres@localhost/project_dinner_de
 OS := $(if $(GOOS),$(GOOS),$(shell go env GOOS))
 ARCH := $(if $(GOARCH),$(GOARCH),$(shell go env GOARCH))
 
-BUILD_IMAGE ?= golang:1.14-alpine
+BUILD_IMAGE ?= golang:1.15-alpine
 
 BUILD_DIRS := bin/$(OS)_$(ARCH)     \
               .go/bin/$(OS)_$(ARCH) \
