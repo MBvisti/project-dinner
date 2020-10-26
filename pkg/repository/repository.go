@@ -5,15 +5,15 @@ import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"log"
-	service "project-dinner/pkg/api"
+	"project-dinner/pkg/api"
 )
 
 type Repository interface {
-	GetDailyRecipes() ([]service.EmailRecipe, error)
-	CreateScrapedRecipe(nR service.Recipe) error
-	CreateRecipe(usr service.Recipe) error
-	GetEmailList() ([]service.User, error)
-	CreateUser(usr service.User) error
+	GetDailyRecipes() ([]api.EmailRecipe, error)
+	CreateScrapedRecipe(nR api.Recipe) error
+	CreateRecipe(usr api.Recipe) error
+	GetEmailList() ([]api.User, error)
+	CreateUser(usr api.User) error
 	MigrateTables() error
 }
 
