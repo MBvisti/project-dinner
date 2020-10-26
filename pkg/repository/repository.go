@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
+	"log"
 	service "project-dinner/pkg/api"
 )
 
@@ -13,6 +14,7 @@ type Repository interface {
 	CreateRecipe(usr service.Recipe) error
 	GetEmailList() ([]service.User, error)
 	CreateUser(usr service.User) error
+	MigrateTables() error
 }
 
 type repoService struct {
@@ -34,9 +36,11 @@ var (
 	// ErrEmailRequired is returned when the email is empty/non-existent
 	ErrEmailRequired = errors.New("repo - email is required")
 	// ErrNoResourceFound is returned when a query couldn't be performed
-	ErrNoResourceFound = errors.New("repo - resource doesn't exists")
-	// ErrNoCreate ...
-	ErrNoCreate = errors.New("repo - couldn't create the resource")
+	ErrNoResourceFound = errors.New("repo - resource does not exists")
+	// ErrNoCreate is returned when a resource couldn't be created
+	ErrNoCreate = errors.New("repo - could not create the resource")
+	// ErrNoMigrate is returned when migrations couldn't be run
+	ErrNoMigrate = errors.New("repo - could not run migrations")
 )
 
 // DestructiveReset resets the database and and creates two users
@@ -103,7 +107,8 @@ func (r *repoService) MigrateTables() error {
 		&rating{},
 		&user{},
 	).Error; err != nil {
-		return err
+		log.Printf("repo - this is the migration error: %s", err.Error())
+		return ErrNoMigrate
 	}
 	return nil
 }
