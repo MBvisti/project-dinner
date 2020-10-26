@@ -1,6 +1,7 @@
 package app
 
-//
+// TODO: leaving this in for now until I'm sure everything I need is taken from it
+
 //import (
 //	"encoding/json"
 //	"fmt"
