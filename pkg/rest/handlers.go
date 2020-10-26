@@ -3,7 +3,7 @@ package rest
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
-	service "project-dinner/pkg/api"
+	"project-dinner/pkg/api"
 )
 
 type handlerResponse struct {
@@ -20,30 +20,13 @@ func APIStatus() gin.HandlerFunc {
 	}
 }
 
-// // StopCronJob stops cron object running on the server struct
-// func (s *Server) StopCronJob() gin.HandlerFunc {
-// 	return func(c *gin.Context) {
-// 		c.Header("Content-Type", "application/json")
-
-// 		s.cron.Stop()
-
-// 		c.JSON(http.StatusOK, handlerResponse{Status: "success", Data: "the cron job is stopped"})
-// 	}
-// }
-
 // // AllRecipes ...
 // type AllRecipes struct {
 // 	Recipes []repository.Recipe `json:"recipes"`
 // }
 
-// // UserRecipe ... TODO: move this in to a user service at one point
-// type UserRecipe struct {
-// 	UserName string
-// 	Recipes  []repository.EmailRecipe
-// }
-
 // SendMails send out recipe emails
-func SendMails(u service.EmailService) gin.HandlerFunc {
+func SendMails(u api.EmailService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		err := u.SendRecipes()
 		if err != nil {
@@ -53,6 +36,46 @@ func SendMails(u service.EmailService) gin.HandlerFunc {
 
 		c.JSON(http.StatusOK, handlerResponse{Status: "success", Data: "all emails sent"})
 
+	}
+}
+
+// SignupUser endpoint
+func SignupUser(u api.UserService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Header("Content-Type", "application/json")
+
+		var user api.User
+
+		err := c.ShouldBindJSON(&user)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, handlerResponse{Status: "failure", Data: "user data no good"})
+			return
+		}
+
+		err = u.CreateUser(user)
+
+		if err != nil {
+			c.JSON(http.StatusBadRequest, handlerResponse{Status: "failure", Data: err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, handlerResponse{Status: "success", Data: "user created"})
+	}
+}
+
+// StartSpider endpoint
+func StartSpider(s api.SpiderService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Header("Content-Type", "application/json")
+
+		err := s.Go("")
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, handlerResponse{Status: "failure", Data: "could not crawl site"})
+			return
+		}
+
+		c.JSON(http.StatusOK, handlerResponse{Status: "success", Data: "user created"})
 	}
 }
 
@@ -93,36 +116,3 @@ func SendMails(u service.EmailService) gin.HandlerFunc {
 //		c.JSON(http.StatusOK, handlerResponse{Status: "success", Data: "website crawled"})
 //	}
 //}
-
-func GetRes(e service.EmailService) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.Header("Content-Type", "application/json")
-
-		text := e.SendRecipes()
-		c.JSON(http.StatusOK, gin.H{"is it working": text})
-	}
-}
-
-// SignupUser endpoint
-func SignupUser(u service.UserService) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.Header("Content-Type", "application/json")
-
-		var user service.User
-
-		err := c.ShouldBindJSON(&user)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, handlerResponse{Status: "failure", Data: "user data no good"})
-			return
-		}
-
-		err = u.CreateUser(user)
-
-		if err != nil {
-			c.JSON(http.StatusBadRequest, handlerResponse{Status: "failure", Data: err.Error()})
-			return
-		}
-
-		c.JSON(http.StatusOK, handlerResponse{Status: "success", Data: "user created"})
-	}
-}
