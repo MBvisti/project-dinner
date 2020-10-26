@@ -24,4 +24,4 @@ jobs:
       # specify any bash command here prefixed with `run: `
       - run: ls
       - run: chmod +x ./build/test.sh
-      - run: sudo ./build/test.sh
+      - run: go test -v ./...
