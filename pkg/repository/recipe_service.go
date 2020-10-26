@@ -2,37 +2,18 @@ package repository
 
 import (
 	"math/rand"
-	service "project-dinner/pkg/services"
+	"project-dinner/pkg/api"
 	"strings"
 
 	"github.com/jinzhu/gorm"
 )
 
-// RecipeService ...
-type RecipeService interface {
-	GetDailyRecipes() ([]service.EmailRecipe, error)
-	CreateScrapedRecipe(nR Recipe) error
-	CreateRecipe(usr service.Recipe) error
-}
-
-type recipeService struct {
-	rS RecipeService
-	db *gorm.DB
-}
-
-// NewRecipeService ...
-func NewRecipeService(db *gorm.DB) RecipeService {
-	return &recipeService{
-		db: db,
-	}
-}
-
-func (r recipeService) CreateRecipe(usr service.Recipe) error {
+func (r repoService) CreateRecipe(usr api.Recipe) error {
 	panic("implement me")
 }
 
 // GetRandomRecipes ...
-func (r *recipeService) GetDailyRecipes() ([]service.EmailRecipe, error) {
+func (r *repoService) GetDailyRecipes() ([]api.EmailRecipe, error) {
 	numberOfEntries := 0
 	err := r.db.Raw("select count(*) from recipes").Count(&numberOfEntries).Error
 
@@ -117,7 +98,7 @@ func (r *recipeService) GetDailyRecipes() ([]service.EmailRecipe, error) {
 		return nil, ErrNoResourceFound
 	}
 
-	rOne := service.EmailRecipe{
+	rOne := api.EmailRecipe{
 		Name:        recipeOne.Name,
 		Description: recipeOne.Description,
 		Category:    recipeOne.Category,
@@ -126,7 +107,7 @@ func (r *recipeService) GetDailyRecipes() ([]service.EmailRecipe, error) {
 		FoundOn:     recipeOne.FoundOn,
 	}
 
-	rTwo := service.EmailRecipe{
+	rTwo := api.EmailRecipe{
 		Name:        recipeTwo.Name,
 		Description: recipeTwo.Description,
 		Category:    recipeTwo.Category,
@@ -135,7 +116,7 @@ func (r *recipeService) GetDailyRecipes() ([]service.EmailRecipe, error) {
 		FoundOn:     recipeTwo.FoundOn,
 	}
 
-	rThree := service.EmailRecipe{
+	rThree := api.EmailRecipe{
 		Name:        recipeThree.Name,
 		Description: recipeThree.Description,
 		Category:    recipeThree.Category,
@@ -144,7 +125,7 @@ func (r *recipeService) GetDailyRecipes() ([]service.EmailRecipe, error) {
 		FoundOn:     recipeThree.FoundOn,
 	}
 
-	rFour := service.EmailRecipe{
+	rFour := api.EmailRecipe{
 		Name:        recipeFour.Name,
 		Description: recipeFour.Description,
 		Category:    recipeFour.Category,
@@ -153,7 +134,7 @@ func (r *recipeService) GetDailyRecipes() ([]service.EmailRecipe, error) {
 		FoundOn:     recipeFour.FoundOn,
 	}
 
-	selectedRecipes := []service.EmailRecipe{
+	selectedRecipes := []api.EmailRecipe{
 		rOne,
 		rTwo,
 		rThree,
@@ -164,7 +145,7 @@ func (r *recipeService) GetDailyRecipes() ([]service.EmailRecipe, error) {
 }
 
 // CreateScrapedRecipe saves a recipe from a scraped site
-func (r *recipeService) CreateScrapedRecipe(nR Recipe) error {
+func (r *repoService) CreateScrapedRecipe(nR api.Recipe) error {
 
 	newRecipe := recipe{
 		Category:    nR.Category,

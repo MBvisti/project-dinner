@@ -4,21 +4,25 @@ import (
 	"errors"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
+	service "project-dinner/pkg/api"
 )
 
-// Services ...
-type Services struct {
-	Recipe RecipeService
-	User   UserService
-	db     *gorm.DB
+type Repository interface {
+	GetDailyRecipes() ([]service.EmailRecipe, error)
+	CreateScrapedRecipe(nR service.Recipe) error
+	CreateRecipe(usr service.Recipe) error
+	GetEmailList() ([]service.User, error)
+	CreateUser(usr service.User) error
+}
+
+type repoService struct {
+	db *gorm.DB
 }
 
 // NewStorage returns a new repository
-func NewStorage(db *gorm.DB) *Services {
-	return &Services{
-		Recipe: NewRecipeService(db),
-		User:   NewUserService(db),
-		db:     db,
+func NewStorage(db *gorm.DB) Repository {
+	return &repoService{
+		db: db,
 	}
 }
 
@@ -36,7 +40,7 @@ var (
 )
 
 // DestructiveReset resets the database and and creates two users
-func (r *Services) DestructiveReset() error {
+func (r *repoService) DestructiveReset() error {
 	err := r.db.DropTableIfExists(
 		&recipe{},
 		&category{},
@@ -85,7 +89,7 @@ func (r *Services) DestructiveReset() error {
 }
 
 // MigrateTables migrates all tables in definitions
-func (r *Services) MigrateTables() error {
+func (r *repoService) MigrateTables() error {
 	if err := r.db.AutoMigrate(
 		&recipe{},
 		&category{},
