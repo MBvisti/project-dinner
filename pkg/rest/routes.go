@@ -1,7 +1,7 @@
 package rest
 
 import (
-	service "project-dinner/pkg/services"
+	service "project-dinner/pkg/api"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
