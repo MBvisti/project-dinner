@@ -2,18 +2,18 @@ package main
 
 import (
 	"fmt"
-	"math/rand"
+	"github.com/gocolly/colly/v2"
+	"log"
+	"net/http"
 	"os"
-	app "project-dinner/pkg"
 	"project-dinner/pkg/repository"
-	"strconv"
-	"time"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
-	"github.com/robfig/cron/v3"
 	"gopkg.in/gomail.v2"
+	"project-dinner/pkg/api"
+	"project-dinner/pkg/rest"
+	"strconv"
 )
 
 func main() {
@@ -39,40 +39,37 @@ func run() error {
 		gin.SetMode(gin.DebugMode)
 	}
 
-	r := gin.Default()
-	r.Use(cors.Default())
-
 	database, err := setupDatabase(connectionString, whatEnv)
+	defer database.Close()
 
 	if err != nil {
 		return err
 	}
 
 	s := repository.NewStorage(database)
-
-	defer database.Close()
-	s.MigrateTables()
-
-	t, err := time.LoadLocation("Europe/Copenhagen")
+	err = s.MigrateTables()
 
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
-
-	c := cron.New(cron.WithLocation(t))
 
 	m := gomail.NewDialer(mailHost, mailPort, sendGridUser, sendGridPassword)
 
-	server := app.NewServer(s, r, c, m)
+	usrService := api.NewUserService(s)
+	emailService := api.NewEmailService(m, s)
+	spiderService := api.NewSpiderService(m, setupCrawler())
 
-	err = server.Run(":" + port)
+	router := rest.Routes(usrService, emailService, spiderService)
+	log.Printf("starting server on: " + port)
+	log.Fatal(http.ListenAndServe(":"+port, router))
 
-	if err != nil {
-		return err
-	}
+	//t, err := time.LoadLocation("Europe/Copenhagen")
 
-	// seed random generator used to pick the emails
-	rand.Seed(time.Now().UTC().UnixNano())
+	//if err != nil {
+	//	return err
+	//}
+
+	//c := cron.New(cron.WithLocation(t))
 
 	return nil
 }
@@ -89,4 +86,10 @@ func setupDatabase(connectionInfo string, environment string) (*gorm.DB, error) 
 	}
 
 	return db, nil
+}
+
+func setupCrawler() *colly.Collector {
+	c := colly.NewCollector()
+
+	return c
 }
