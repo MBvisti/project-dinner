@@ -20,8 +20,6 @@ jobs:
     working_directory: /go/src/github.com/{{ORG_NAME}}/{{REPO_NAME}}
     steps:
       - checkout
-      - setup_remote_docker:
-          version: 19.03.13
 
       # specify any bash command here prefixed with `run: `
       - run: ls
