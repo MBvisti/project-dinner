@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/gocolly/colly/v2"
+	"github.com/robfig/cron/v3"
 	"log"
 	"net/http"
 	"os"
@@ -63,13 +64,9 @@ func run() error {
 	log.Printf("starting server on: " + port)
 	log.Fatal(http.ListenAndServe(":"+port, router))
 
-	//t, err := time.LoadLocation("Europe/Copenhagen")
-
-	//if err != nil {
-	//	return err
-	//}
-
-	//c := cron.New(cron.WithLocation(t))
+	// start up the every day mailer
+	job, err := emailService.EveryDayMailer()
+	startMailer(job, err)
 
 	return nil
 }
@@ -92,4 +89,12 @@ func setupCrawler() *colly.Collector {
 	c := colly.NewCollector()
 
 	return c
+}
+
+func startMailer(j cron.Job, err error) {
+	if err != nil {
+		log.Printf("this is the mailer job err: %v", err)
+	}
+
+	j.Run()
 }
