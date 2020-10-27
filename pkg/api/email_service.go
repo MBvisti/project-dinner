@@ -2,15 +2,18 @@ package api
 
 import (
 	"bytes"
-	"html/template"
-	"log"
-
+	"errors"
+	"fmt"
+	"github.com/robfig/cron/v3"
 	"gopkg.in/gomail.v2"
+	"html/template"
+	"time"
 )
 
 // EmailService is the email service's interface
 type EmailService interface {
 	SendRecipes() error
+	EveryDayMailer() (cron.Job, error)
 }
 
 // EmailRepository ...
@@ -32,6 +35,12 @@ func NewEmailService(mp *gomail.Dialer, r EmailRepository) EmailService {
 	}
 }
 
+var (
+	ErrLoadLocation = errors.New("email service - could not load location")
+	ErrCronJob      = errors.New("email service - could not run cron job")
+)
+
+// SendRecipes will email all users the daily recipes
 func (e *emailService) SendRecipes() error {
 	mailTemplate, err := template.ParseFiles("./template/daily_recipe_email.html")
 	if err != nil {
@@ -49,8 +58,6 @@ func (e *emailService) SendRecipes() error {
 	if err != nil {
 		return err
 	}
-
-	log.Print(emailList)
 
 	for _, user := range emailList {
 		usrRecipe := UserRecipe{
@@ -74,4 +81,33 @@ func (e *emailService) SendRecipes() error {
 	}
 
 	return nil
+}
+
+// EveryDayMailer calls SendMails everyday at 4pm
+func (e *emailService) EveryDayMailer() (cron.Job, error) {
+	fmt.Print("starting up everyday mailer...")
+
+	// Set the location for the cron job
+	t, err := time.LoadLocation("Europe/Copenhagen")
+
+	if err != nil {
+		return nil, ErrLoadLocation
+	}
+
+	// create instance of cron
+	c := cron.New(cron.WithLocation(t))
+	var cronJobError error
+
+	// Send out recipes at 4pm Cph time
+	c.AddFunc("0 14 * * *", func() {
+		cronJobError = e.SendRecipes()
+	})
+
+	if cronJobError != nil {
+		return nil, ErrCronJob
+	}
+
+	fmt.Print("everyday mailer started")
+
+	return c, nil
 }
