@@ -40,7 +40,7 @@ func SendMails(u api.EmailService) gin.HandlerFunc {
 }
 
 // SignupUser endpoint
-func SignupUser(u api.UserService) gin.HandlerFunc {
+func SignupUser(u api.UserService, e api.EmailService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Header("Content-Type", "application/json")
 
@@ -56,6 +56,20 @@ func SignupUser(u api.UserService) gin.HandlerFunc {
 
 		if err != nil {
 			c.JSON(http.StatusBadRequest, handlerResponse{Status: "failure", Data: err.Error()})
+			return
+		}
+
+		mail, err := e.CreateWelcomeMail(user)
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, handlerResponse{Status: "failure", Data: err.Error()})
+			return
+		}
+
+		err = e.MailSender(*mail)
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, handlerResponse{Status: "failure", Data: err.Error()})
 			return
 		}
 
