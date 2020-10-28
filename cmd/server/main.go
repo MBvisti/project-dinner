@@ -60,13 +60,13 @@ func run() error {
 	emailService := api.NewEmailService(m, s)
 	spiderService := api.NewSpiderService(m, setupCrawler())
 
+	// start up the every day mailer
+	job, err := emailService.EveryDayMailer()
+	go startMailer(job, err)
+
 	router := rest.Routes(usrService, emailService, spiderService)
 	log.Printf("starting server on: " + port)
 	log.Fatal(http.ListenAndServe(":"+port, router))
-
-	// start up the every day mailer
-	job, err := emailService.EveryDayMailer()
-	startMailer(job, err)
 
 	return nil
 }
