@@ -45,7 +45,7 @@ func TestCreateWelcomeMail(t *testing.T) {
 		if to[0] != expectedTo[0] {
 			t.Errorf("Create welcome mail test failed. expected: %s , got: %s", expectedTo[0], to[0])
 		}
-		if subject[0]  != expectedSubject[0] {
+		if subject[0] != expectedSubject[0] {
 			t.Errorf("Create welcome mail test failed. expected: %s , got: %s", expectedSubject[0], subject[0])
 		}
 	})

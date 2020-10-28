@@ -117,11 +117,7 @@ func (e *emailService) EveryDayMailer() (cron.Job, error) {
 }
 
 func (e *emailService) CreateWelcomeMail(u User) (*gomail.Message, error) {
-	// TODO: factor this out
-	_, b, _, _ := runtime.Caller(0)
-	pkgPath := filepath.Join(filepath.Dir(b), "../..")
-
-	mailTemplate, err := template.ParseFiles(pkgPath + "/template/welcome_email.html")
+	mailTemplate, err := template.ParseFiles(GetTemplatePath() + "/welcome_email.html")
 	if err != nil {
 		return nil, err
 	}
@@ -149,4 +145,11 @@ func (e *emailService) MailSender(m gomail.Message) error {
 	}
 
 	return nil
+}
+
+func GetTemplatePath() string {
+	_, b, _, _ := runtime.Caller(0)
+	pkgPath := filepath.Join(filepath.Dir(b), "../../template")
+
+	return pkgPath
 }
