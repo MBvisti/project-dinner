@@ -7,6 +7,8 @@ import (
 	"github.com/robfig/cron/v3"
 	"gopkg.in/gomail.v2"
 	"html/template"
+	"path/filepath"
+	"runtime"
 	"time"
 )
 
@@ -14,6 +16,8 @@ import (
 type EmailService interface {
 	SendRecipes() error
 	EveryDayMailer() (cron.Job, error)
+	CreateWelcomeMail(u User) (*gomail.Message, error)
+	MailSender(message gomail.Message) error
 }
 
 // EmailRepository ...
@@ -110,4 +114,39 @@ func (e *emailService) EveryDayMailer() (cron.Job, error) {
 	fmt.Print("everyday mailer started")
 
 	return c, nil
+}
+
+func (e *emailService) CreateWelcomeMail(u User) (*gomail.Message, error) {
+	// TODO: factor this out
+	_, b, _, _ := runtime.Caller(0)
+	pkgPath := filepath.Join(filepath.Dir(b), "../..")
+
+	mailTemplate, err := template.ParseFiles(pkgPath + "/template/welcome_email.html")
+	if err != nil {
+		return nil, err
+	}
+
+	var t bytes.Buffer
+	err = mailTemplate.Execute(&t, u)
+	mail := gomail.NewMessage()
+	mail.SetAddressHeader("From", "noreply@mbvistisen.dk", "Morten's recipe service")
+	mail.SetHeader("To", u.Email)
+	mail.SetHeader("Subject", "Thanks for signing up!")
+	mail.SetBody("text/html", t.String())
+
+	if err != nil {
+		return nil, err
+	}
+
+	return mail, nil
+}
+
+func (e *emailService) MailSender(m gomail.Message) error {
+	err := e.mailProvider.DialAndSend(&m)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
