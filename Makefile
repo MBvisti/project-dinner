@@ -28,7 +28,7 @@ BUILD_DIRS := bin/$(OS)_$(ARCH)     \
               .go/cache
 
 dev:
-	air
+	air -c ./.air.toml
 
 # for testing purposes in docker
 dev-build: vet format
