@@ -2,17 +2,16 @@ package main
 
 import (
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"github.com/gocolly/colly/v2"
+	"github.com/jinzhu/gorm"
 	"github.com/robfig/cron/v3"
+	"gopkg.in/gomail.v2"
 	"log"
 	"net/http"
 	"os"
-	"project-dinner/pkg/repository"
-
-	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
-	"gopkg.in/gomail.v2"
 	"project-dinner/pkg/api"
+	"project-dinner/pkg/repository"
 	"project-dinner/pkg/rest"
 	"strconv"
 )

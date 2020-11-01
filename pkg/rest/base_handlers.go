@@ -25,58 +25,6 @@ func APIStatus() gin.HandlerFunc {
 // 	Recipes []repository.Recipe `json:"recipes"`
 // }
 
-// SendMails send out recipe emails
-func SendMails(u api.EmailService) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		err := u.SendRecipes()
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, handlerResponse{Status: "failure", Data: err.Error()})
-			return
-		}
-
-		c.JSON(http.StatusOK, handlerResponse{Status: "success", Data: "all emails sent"})
-
-	}
-}
-
-// SignupUser endpoint
-func SignupUser(u api.UserService, e api.EmailService) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.Header("Content-Type", "application/json")
-
-		var user api.User
-
-		err := c.ShouldBindJSON(&user)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, handlerResponse{Status: "failure", Data: "user data no good"})
-			return
-		}
-
-		err = u.CreateUser(user)
-
-		if err != nil {
-			c.JSON(http.StatusBadRequest, handlerResponse{Status: "failure", Data: err.Error()})
-			return
-		}
-
-		mail, err := e.CreateWelcomeMail(user)
-
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, handlerResponse{Status: "failure", Data: err.Error()})
-			return
-		}
-
-		err = e.MailSender(*mail)
-
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, handlerResponse{Status: "failure", Data: err.Error()})
-			return
-		}
-
-		c.JSON(http.StatusOK, handlerResponse{Status: "success", Data: "user created"})
-	}
-}
-
 // StartSpider endpoint
 func StartSpider(s api.SpiderService) gin.HandlerFunc {
 	return func(c *gin.Context) {
