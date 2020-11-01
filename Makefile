@@ -3,7 +3,7 @@ PKG := project-dinner/pkg
 PKG_LIST := $(shell go list ${PKG}/...)
 
 # This version-strategy uses a manual value to set the version string
-VERSION := 0.4.0
+VERSION := 0.4.1
 
 # Where to push the docker image.
 REGISTRY ?= mbvofdocker
@@ -33,7 +33,7 @@ dev:
 # for testing purposes in docker
 dev-build: vet format
 	@docker build --rm --build-arg VERSION=${VERSION} -t ${REGISTRY}/${OUT}:${VERSION} .
-	@docker run --rm -e DEVELOPMENT_MODE=true -e SEND_GRID_USER=00d529b7247ff7 -e SEND_GRID_API_KEY=84af903e641a55 -e HOST=smtp.mailtrap.io -e MAIL_PORT=25 -e IS_STAGING=true -e DATABASE_URL="postgres://postgres:postgres@host.docker.internal/bandlokaler_test?sslmode=disable" -p 5000:5000 ${REGISTRY}/${OUT}:${VERSION}
+	@docker run --rm -e WHAT_ENVIRONMENT_IS_THIS=development -e DEVELOPMENT_MODE=true -e SEND_GRID_USER=00d529b7247ff7 -e SEND_GRID_API_KEY=84af903e641a55 -e HOST=smtp.mailtrap.io -e MAIL_PORT=25 -e IS_STAGING=true -e DATABASE_URL="postgres://postgres:postgres@host.docker.internal/project_dinner_dev?sslmode=disable" -p 5000:5000 ${REGISTRY}/${OUT}:${VERSION}
 
 test: vet $(BUILD_DIRS)
 	@docker run                                                 	\
