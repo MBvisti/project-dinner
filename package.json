@@ -1,0 +1,21 @@
+{
+  "name": "project-dinner",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/MBvisti/project-dinner.git",
+  "author": "Morten Vistisen <heymbv@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "build:tailwind": "postcss ./static/css/base.css -o ./static/dist/tailwind.css",
+    "watch": "watch \"npm run build:tailwind\" ./template"
+  },
+  "devDependencies": {
+    "postcss": "^8.1.4",
+    "postcss-cli": "^8.2.0",
+    "tailwind": "^4.0.0"
+  },
+  "dependencies": {
+    "tailwindcss": "^1.9.6",
+    "watch": "^1.0.2"
+  }
+}
