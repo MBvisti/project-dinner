@@ -18,6 +18,7 @@ RUN go mod download
 
 COPY cmd ./cmd
 COPY pkg ./pkg
+COPY static ./static
 COPY template ./template
 
 RUN GOOS=linux GOARCH=amd64 go build -ldflags "-X main.version=${VERSION} -s -w" -a -o main cmd/server/main.go
@@ -27,5 +28,7 @@ FROM alpine
 RUN apk add --no-cache tzdata
 COPY --from=build-env /app/main /
 COPY --from=build-env /app/template/ /template/
+COPY --from=build-env /app/pkg/views/ /pkg/views/
+COPY --from=build-env /app/static/ /static/
 
 CMD ["./main"]
