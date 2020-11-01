@@ -3,6 +3,7 @@ package rest
 import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"net/http"
 	service "project-dinner/pkg/api"
 )
 
@@ -10,6 +11,7 @@ import (
 func Routes(userService service.UserService, emailService service.EmailService, spiderService service.SpiderService) *gin.Engine {
 	r := gin.Default()
 	r.Use(cors.Default())
+	r.StaticFS("/static", http.Dir("static"))
 
 	// All api endpoints here
 	v1 := r.Group("/v1/api")
