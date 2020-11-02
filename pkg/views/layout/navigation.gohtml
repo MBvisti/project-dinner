@@ -1,15 +1,13 @@
 {{ define "nav" }}
-    <nav>
-        <div class="container md:mx-auto md:px-8 lg:mx-24 p-8 flex justify-between items-center">
-            <a class="font-bold lg:text-2xl" href="/">
-                Eat good
-            </a>
-            <div>
-                <ul class="inline-flex">
-                    <li><a class="px-4 hover:text-gray-500" href="/">Home</a></li>
-                    <li><a class="px-4 hover:text-gray-500" href="#">About</a></li>
-                </ul>
-            </div>
-        </div>
+    <nav class="px-8 flex justify-between items-center h-16 w-full border-orange-400 border-b-2 lg:px-20">
+        <a class="font-bold lg:text-2xl" href="/">
+            Eat good
+        </a>
+        <ul class="flex justify-between">
+            <li><a class="pl-2 text text-gray-700 hover:text-black" href="/">Home</a></li>
+            <li><a class="pl-2 text text-gray-700 hover:text-black" href="/sign-up">Subscribe</a></li>
+            <li><a class="pl-2 text text-gray-700 hover:text-black" href="/recipes">Recipes</a></li>
+            <li><a class="pl-2 text text-gray-700 hover:text-black" href="/about">About</a></li>
+        </ul>
     </nav>
 {{ end }}
