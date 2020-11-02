@@ -586,6 +586,16 @@ video {
   height: auto;
 }
 
+html {
+  box-sizing: border-box;
+}
+
+*, *:before, *:after {
+  box-sizing: inherit;
+  textarea, select, input, button { outline: none;
+  }
+}
+
 .container {
   width: 100%;
 }
