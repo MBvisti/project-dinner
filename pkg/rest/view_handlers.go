@@ -30,7 +30,7 @@ func RenderHome() gin.HandlerFunc {
 func RenderSignup() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Header("Content-Type", "text/html")
-		var homeView *views.View
+		var signupView *views.View
 
 		type TestData struct {
 			Name string
@@ -42,8 +42,8 @@ func RenderSignup() gin.HandlerFunc {
 		}
 
 		wd, _ := os.Getwd()
-		homeView = views.NewView("base", wd+"/pkg/views/signup.gohtml")
+		signupView = views.NewView("base", wd+"/pkg/views/signup.gohtml")
 
-		views.Must(homeView.Render(c.Writer, data))
+		views.Must(signupView.Render(c.Writer, data))
 	}
 }

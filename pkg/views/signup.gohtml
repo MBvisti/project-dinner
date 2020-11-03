@@ -1,3 +1,63 @@
 {{define "render"}}
-    <p>Welcome to signup!</p>
+    <div class="mx-auto lg:w-1/2 w-9/12" x-data="submitHandler()">
+        <form onsubmit="return Subscribe(event)" x-on:submit="submit()" action="" method="post" class="flex flex-col px-4 border border-gray-100 rounded shadow h-full items-center">
+            <h1 class="text-xl text-black mt-3 mb-3 font-bold">Subscribe</h1>
+            <input type="text" name="name" placeholder="Name" class="block border border-grey-light w-full p-2 rounded mb-4"/>
+            <input type="email" name="email" required placeholder="your@mail.com" class="block border border-grey-light w-full p-2 rounded mb-4"/>
+            <div class="flex flex-col w-full mb-4">
+                <p class="text text-black mb-2">What type of recipes do you want?</p>
+                <select name="recipe_type" class="w-full rounded border border-grey-light p-2">
+                    <option value="regular">Regular</option>
+                    <option value="fitness">Fitness</option>
+                    <option value="comfy">Comfy</option>
+                </select>
+            </div>
+            <div class="flex flex-col w-full mb-4">
+                <p class="text text-black mb-2">Do you want meat?</p>
+                <select name="food_type" class="w-full rounded border border-grey-light p-2">
+                    <option value="vegetarian">No</option>
+                    <option value="murder">Yes</option>
+                </select>
+            </div>
+            {{/*TODO: is this how inline-flex work? look into it!*/}}
+            <button id="submit_button" class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-base leading-6 font-medium rounded-md text-white bg-green-500 hover:bg-green-700 focus:outline-none focus:border-green-700 focus:shadow-outline-green active:bg-green-700 transition ease-in-out duration-150">
+                <svg x-show="loading" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span x-show="!loading">
+                    Subscribe
+                </span>
+                <span x-show="loading">
+                    Subscribing...
+                </span>
+            </button>
+            <div class="text-center text-sm text-grey-dark mt-4 mb-4">
+                By signing up, you agree to the
+                <a class="no-underline border-b border-grey-dark text-grey-dark" href="#">
+                    Terms of Service
+                </a> and
+                <a class="no-underline border-b border-grey-dark text-grey-dark" href="#">
+                    Privacy Policy
+                </a>
+            </div>
+        </form>
+    </div>
+    <script>
+        function submitHandler () {
+            return {
+                loading: false,
+                submit() {
+                    const submitButton = document.querySelector("#submit_button")
+                    submitButton.setAttribute("disabled", "disabled")
+                    submitButton.classList.remove("bg-green-500")
+                    submitButton.classList.add("bg-red-700")
+                    submitButton.classList.remove("hover:bg-green-700")
+                    submitButton.classList.add("hover:bg-red-700")
+                    return this.loading = !this.loading
+                }
+            }
+        }
+    </script>
+    <script type="text/javascript" src="static/js/handleSubscribe.js"></script>
 {{end}}
