@@ -24,9 +24,9 @@ func Routes(userService service.UserService, emailService service.EmailService, 
 
 	// All view endpoints here
 	r.GET("/", RenderHome())
-	r.GET("/success", RenderHome())
-	r.GET("/failure", RenderHome())
-	r.GET("/sign-up", RenderSignup())
+	r.GET("/subscribe", RenderSignup())
+	r.GET("/subscribe/success", RenderSignup())
+	r.GET("/subscribe/failure", RenderSignup())
 
 	return r
 }
