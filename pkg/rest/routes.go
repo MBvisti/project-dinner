@@ -4,12 +4,12 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	service "project-dinner/pkg/api"
+	"project-dinner/pkg/api"
 	"project-dinner/pkg/repository"
 )
 
 // Routes set up the routes
-func Routes(userService service.UserService, emailService service.EmailService, spiderService service.SpiderService, repo repository.Repository) *gin.Engine {
+func Routes(userService api.UserService, emailService api.EmailService, spiderService api.SpiderService, recipeService api.RecipeService, repo repository.Repository) *gin.Engine {
 	r := gin.Default()
 	r.Use(cors.Default())
 	r.StaticFS("/static", http.Dir("static"))
@@ -25,7 +25,7 @@ func Routes(userService service.UserService, emailService service.EmailService, 
 	}
 
 	// All view endpoints here
-	r.GET("/", RenderHome())
+	r.GET("/", RenderHome(recipeService))
 	// Subscribe
 	r.GET("/subscribe", RenderSubscribe())
 	r.GET("/subscribe/success", RenderSubscribe())
