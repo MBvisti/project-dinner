@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"log"
 	"math/rand"
 	"project-dinner/pkg/api"
 	"strings"
@@ -8,8 +9,125 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-func (r repoService) CreateRecipe(usr api.Recipe) error {
+func (r *repoService) CreateRecipe(usr api.Recipe) error {
 	panic("implement me")
+}
+
+func (r *repoService) GetFeaturedRecipes() []api.FeaturedRecipe {
+	//
+	//rows, err := r.db.Table("recipes").Where("recipes.id IN ?", []int{1, 2, 3, 4}).
+	//	//Joins("Join recipe_images on recipe_images.recipe_id = recipes.id").
+	//	Select("recipes.name, recipes.description").Rows()
+	//
+	//if err != nil {
+	//	log.Printf("this is the error: %v", err)
+	//}
+
+	type NewRecipeTest struct {
+		Name        string
+		Description string
+		Images      []string
+	}
+
+	type Result struct {
+		Name        []string
+		Description []string
+		Images      []string
+	}
+
+	rows, err := r.db.Raw("select recipes.name, recipes.description, recipe_images.image\nfrom recipes \nRIGHT JOIN recipe_images on recipe_id = recipe_images.recipe_id\nwhere recipes.id in ('1', '2', '3', '4') and recipe_images.recipe_id = recipes.id;").Rows()
+	defer rows.Close()
+
+	log.Printf("this is err: %v", err)
+
+	//var result Result
+	type NewImageTest struct {
+		Image string
+	}
+	//RTest := NewRecipeTest{}
+
+	type baseRecipe struct {
+		Name        string
+		Description string
+		Images      []string
+	}
+
+	type baseImage struct {
+		Image string
+	}
+
+	var result Result
+
+	for rows.Next() {
+		rBase := baseRecipe{}
+		iBase := baseImage{}
+		err = rows.Scan(&rBase.Name, &rBase.Description, &iBase.Image)
+
+		if err != nil {
+			log.Printf("this is the new error: %v", err)
+		}
+
+		//RTest.Name = rBase.Name
+		//RTest.Description = rBase.Description
+		rBase.Images = append(rBase.Images, iBase.Image)
+		result.Name = append(result.Name, rBase.Name)
+		result.Description = append(result.Description, rBase.Description)
+		result.Images = append(result.Images, rBase.Images...)
+	}
+
+	log.Printf("this is the data: %v", result)
+
+	for _, name := range result.Name {
+		log.Printf("this is a name: %s", name)
+	}
+
+	recipeOne := recipe{
+		Model: gorm.Model{
+			ID: 1,
+		},
+	}
+
+	imageOne := recipeImage{}
+	err = r.db.Where("recipe_id = ?", 1).First(&imageOne).Error
+	if err != nil {
+		log.Printf("this is the error: %v", err)
+	}
+
+	err = r.db.Table("recipes").First(&recipeOne).Error
+	if err != nil {
+		log.Printf("this is the error: %v", err)
+	}
+
+	featureOne := api.FeaturedRecipe{
+		Image: imageOne.Image,
+		Name:  recipeOne.Name,
+	}
+
+	recipeTwo := recipe{
+		Model: gorm.Model{
+			ID: 32,
+		},
+	}
+
+	imageTwo := recipeImage{}
+	err = r.db.Where("recipe_id = ?", 32).First(&imageTwo).Error
+	if err != nil {
+		log.Printf("this is the error: %v", err)
+	}
+
+	err = r.db.Table("recipes").First(&recipeTwo).Error
+	if err != nil {
+		log.Printf("this is the error: %v", err)
+	}
+
+	featureTwo := api.FeaturedRecipe{
+		Image: imageTwo.Image,
+		Name:  recipeTwo.Name,
+	}
+
+	features := []api.FeaturedRecipe{featureOne, featureTwo}
+
+	return features
 }
 
 // GetRandomRecipes ...

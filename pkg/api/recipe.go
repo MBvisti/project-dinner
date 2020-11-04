@@ -1,5 +1,10 @@
 package api
 
+type FeaturedRecipe struct {
+	Image string `json:"image"`
+	Name  string `json:"name"`
+}
+
 type EmailRecipe struct {
 	Name        string
 	Description string
