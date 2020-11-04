@@ -7,6 +7,7 @@ import (
 	"github.com/robfig/cron/v3"
 	"gopkg.in/gomail.v2"
 	"html/template"
+	"log"
 	"path/filepath"
 	"runtime"
 	"time"
@@ -117,8 +118,9 @@ func (e *emailService) EveryDayMailer() (cron.Job, error) {
 }
 
 func (e *emailService) CreateWelcomeMail(u User) (*gomail.Message, error) {
-	mailTemplate, err := template.ParseFiles(GetTemplatePath() + "/welcome_email.html")
+	mailTemplate, err := template.ParseFiles("./template/welcome_email.html")
 	if err != nil {
+		log.Printf("this is err: %v", err)
 		return nil, err
 	}
 

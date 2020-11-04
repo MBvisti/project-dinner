@@ -2,6 +2,7 @@ package rest
 
 import (
 	"github.com/gin-gonic/gin"
+	"log"
 	"net/http"
 	"project-dinner/pkg/api"
 )
@@ -29,6 +30,7 @@ func SubscribeUser(u api.UserService, e api.EmailService) gin.HandlerFunc {
 		mail, err := e.CreateWelcomeMail(user)
 
 		if err != nil {
+			log.Printf("this is the handler err: %v", err)
 			c.JSON(http.StatusInternalServerError, handlerResponse{Status: "failure", Data: err.Error()})
 			return
 		}
@@ -36,6 +38,7 @@ func SubscribeUser(u api.UserService, e api.EmailService) gin.HandlerFunc {
 		err = e.MailSender(*mail)
 
 		if err != nil {
+			log.Printf("this is the handler err: %v", err)
 			c.JSON(http.StatusInternalServerError, handlerResponse{Status: "failure", Data: err.Error()})
 			return
 		}
