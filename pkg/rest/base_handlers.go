@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"project-dinner/pkg/api"
+	"project-dinner/pkg/repository"
 )
 
 type handlerResponse struct {
@@ -17,6 +18,20 @@ func APIStatus() gin.HandlerFunc {
 		c.Header("Content-Type", "application/json")
 
 		c.JSON(http.StatusOK, handlerResponse{Status: "success", Data: "project dinner api running smoothly"})
+	}
+}
+
+func SeedProdData(r repository.Repository) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Header("Content-Type", "application/json")
+
+		err := r.SeedProductionData()
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, handlerResponse{Status: "failure", Data: "could not seed database"})
+		}
+
+		c.JSON(http.StatusOK, handlerResponse{Status: "success", Data: "production db seeded"})
 	}
 }
 

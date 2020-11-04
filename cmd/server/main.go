@@ -63,7 +63,7 @@ func run() error {
 	job, err := emailService.EveryDayMailer()
 	go startMailer(job, err)
 
-	router := rest.Routes(usrService, emailService, spiderService)
+	router := rest.Routes(usrService, emailService, spiderService, s)
 	log.Printf("starting server on: " + port)
 	log.Fatal(http.ListenAndServe(":"+port, router))
 

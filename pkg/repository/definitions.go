@@ -94,6 +94,20 @@ type rating struct {
 // UserTable ...
 type user struct {
 	gorm.Model
-	Email string `gorm:"not null;unique_index"`
-	Name  string
+	Email         string `gorm:"not null;unique_index"`
+	Name          string
+	RecipeTypeID  uint
+	RecipeType    recipeType
+	DietaryTypeID uint
+	DietaryType   dietaryType
+}
+
+type recipeType struct {
+	gorm.Model
+	Type string `gorm:"unique_index"`
+}
+
+type dietaryType struct {
+	gorm.Model
+	Type string `gorm:"unique_index"`
 }

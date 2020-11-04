@@ -15,6 +15,7 @@ type Repository interface {
 	GetEmailList() ([]service.User, error)
 	CreateUser(usr service.User) error
 	MigrateTables() error
+	SeedProductionData() error
 }
 
 type repoService struct {
@@ -57,6 +58,8 @@ func (r *repoService) DestructiveReset() error {
 		&recipeInstruction{},
 		&rating{},
 		&user{},
+		&recipeType{},
+		&dietaryType{},
 	).Error
 	if err != nil {
 		return err
@@ -66,10 +69,16 @@ func (r *repoService) DestructiveReset() error {
 	if err != nil {
 		return err
 	}
+	err = r.SeedProductionData()
+	if err != nil {
+		return err
+	}
 
 	morten := user{
-		Email: "mbv1406@gmail.com",
-		Name:  "Morten",
+		Email:         "mbv1406@gmail.com",
+		Name:          "Morten",
+		RecipeTypeID:  3,
+		DietaryTypeID: 2,
 	}
 
 	err = r.db.Create(&morten).Error
@@ -79,8 +88,10 @@ func (r *repoService) DestructiveReset() error {
 	}
 
 	javiera := user{
-		Email: "j.camuslaso@gmail.com",
-		Name:  "Javiera",
+		Email:         "j.camuslaso@gmail.com",
+		Name:          "Javiera",
+		RecipeTypeID:  1,
+		DietaryTypeID: 1,
 	}
 
 	err = r.db.Create(&javiera).Error
@@ -106,9 +117,57 @@ func (r *repoService) MigrateTables() error {
 		&recipeInstruction{},
 		&rating{},
 		&user{},
+		&recipeType{},
+		&dietaryType{},
 	).Error; err != nil {
 		log.Printf("repo - this is the migration error: %s", err.Error())
 		return ErrNoMigrate
+	}
+	return nil
+}
+
+// SeedProductionData creates necessary data
+func (r *repoService) SeedProductionData() error {
+	fitnessType := recipeType{
+		Type: "fitness",
+	}
+
+	regularType := recipeType{
+		Type: "regular",
+	}
+
+	comfyType := recipeType{
+		Type: "comfy",
+	}
+
+	err := r.db.Create(&fitnessType).Error
+	if err != nil {
+		return err
+	}
+	err = r.db.Create(&regularType).Error
+	if err != nil {
+		return err
+	}
+	err = r.db.Create(&comfyType).Error
+	if err != nil {
+		return err
+	}
+
+	vegetarian := dietaryType{
+		Type: "vegetarian",
+	}
+	meatEater := dietaryType{
+		Type: "meat",
+	}
+
+	err = r.db.Create(&vegetarian).Error
+	if err != nil {
+		return err
+	}
+
+	err = r.db.Create(&meatEater).Error
+	if err != nil {
+		return err
 	}
 	return nil
 }
