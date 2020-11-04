@@ -47,3 +47,24 @@ func RenderSubscribe() gin.HandlerFunc {
 		views.Must(subscribeView.Render(c.Writer, data))
 	}
 }
+
+func RenderTodaysRecipes() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Header("Content-Type", "text/html")
+		var subscribeView *views.View
+
+		type TestData struct {
+			Name string
+			Msg  string
+		}
+		data := TestData{
+			Name: "MBV",
+			Msg:  "Its working! Its working!!",
+		}
+
+		wd, _ := os.Getwd()
+		subscribeView = views.NewView("base", wd+"/pkg/views/todays_recipes.gohtml")
+
+		views.Must(subscribeView.Render(c.Writer, data))
+	}
+}
