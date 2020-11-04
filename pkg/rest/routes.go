@@ -5,10 +5,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	service "project-dinner/pkg/api"
+	"project-dinner/pkg/repository"
 )
 
 // Routes set up the routes
-func Routes(userService service.UserService, emailService service.EmailService, spiderService service.SpiderService) *gin.Engine {
+func Routes(userService service.UserService, emailService service.EmailService, spiderService service.SpiderService, repo repository.Repository) *gin.Engine {
 	r := gin.Default()
 	r.Use(cors.Default())
 	r.StaticFS("/static", http.Dir("static"))
@@ -20,6 +21,7 @@ func Routes(userService service.UserService, emailService service.EmailService, 
 		v1.POST("/subscribe", SubscribeUser(userService, emailService))
 		v1.GET("/send-mails", SendMails(emailService))
 		v1.GET("/start-scraping-procedure", StartSpider(spiderService))
+		v1.POST("/seed-prod-db", SeedProdData(repo))
 	}
 
 	// All view endpoints here
