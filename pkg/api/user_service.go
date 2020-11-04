@@ -11,7 +11,7 @@ type UserService interface {
 
 // Repository ...
 type UserRepository interface {
-	CreateUser(usr User) error
+	CreateUser(u User) error
 }
 
 type userService struct {
@@ -30,6 +30,8 @@ func (s *userService) CreateUser(u User) error {
 
 	newUser.Email = strings.ToLower(u.Email)
 	newUser.Name = strings.ToLower(u.Name)
+	newUser.RecipeType = strings.ToLower(u.RecipeType)
+	newUser.DietaryType = strings.ToLower(u.DietaryType)
 
 	err := s.storage.CreateUser(newUser)
 
