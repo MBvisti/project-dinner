@@ -30,6 +30,8 @@ func Routes(userService service.UserService, emailService service.EmailService, 
 	r.GET("/subscribe/failure", RenderSubscribe())
 	// Today's recipes
 	r.GET("/todays-recipes", RenderTodaysRecipes())
+	// About
+	r.GET("/about", RenderAbout())
 
 	return r
 }

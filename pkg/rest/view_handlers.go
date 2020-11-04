@@ -51,7 +51,7 @@ func RenderSubscribe() gin.HandlerFunc {
 func RenderTodaysRecipes() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Header("Content-Type", "text/html")
-		var subscribeView *views.View
+		var todaysRecipesView *views.View
 
 		type TestData struct {
 			Name string
@@ -63,8 +63,29 @@ func RenderTodaysRecipes() gin.HandlerFunc {
 		}
 
 		wd, _ := os.Getwd()
-		subscribeView = views.NewView("base", wd+"/pkg/views/todays_recipes.gohtml")
+		todaysRecipesView = views.NewView("base", wd+"/pkg/views/todays_recipes.gohtml")
 
-		views.Must(subscribeView.Render(c.Writer, data))
+		views.Must(todaysRecipesView.Render(c.Writer, data))
+	}
+}
+
+func RenderAbout() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Header("Content-Type", "text/html")
+		var aboutView *views.View
+
+		type TestData struct {
+			Name string
+			Msg  string
+		}
+		data := TestData{
+			Name: "MBV",
+			Msg:  "Its working! Its working!!",
+		}
+
+		wd, _ := os.Getwd()
+		aboutView = views.NewView("base", wd+"/pkg/views/about.gohtml")
+
+		views.Must(aboutView.Render(c.Writer, data))
 	}
 }
