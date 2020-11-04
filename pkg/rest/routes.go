@@ -28,6 +28,8 @@ func Routes(userService service.UserService, emailService service.EmailService, 
 	r.GET("/subscribe", RenderSubscribe())
 	r.GET("/subscribe/success", RenderSubscribe())
 	r.GET("/subscribe/failure", RenderSubscribe())
+	// Today's recipes
+	r.GET("/todays-recipes", RenderTodaysRecipes())
 
 	return r
 }
