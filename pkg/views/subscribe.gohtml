@@ -1,9 +1,9 @@
 {{define "render"}}
     <div class="mx-auto lg:w-4/12 w-9/12" x-data="submitHandler()" x-init="isSubscribeSuccessful()">
-        <div x-show="subscribeSuccess" class="mb-4 shadow border rounded border-green-300 w-full p-2 md:p-4">
+        <div style="display: none" data-subscribe-success class="mb-4 shadow border rounded border-green-300 w-full p-2 md:p-4">
             <p class="text font-bold md:text-center">Thanks for subscribing!</p>
         </div>
-        <div x-show="subscribeFailure" class="mb-4 shadow border rounded border-red-300 w-full p-2 md:p-4">
+        <div style="display: none" data-subscribe-failure class="mb-4 shadow border rounded border-red-300 w-full p-2 md:p-4">
             <p class="text font-bold md:text-center">Something went wrong - please try again</p>
         </div>
         <form onsubmit="return Subscribe(event)" x-on:submit="submit()" action="" method="post" class="flex flex-col px-4 border border-gray-100 rounded shadow h-full items-center">
@@ -56,8 +56,10 @@
                 subscribeFailure: false,
                 isSubscribeSuccessful() {
                   const {pathname} = window.location;
+                  const successMsg = document.querySelector("[data-subscribe-success]");
+                  const failureMsg = document.querySelector("[data-subscribe-failure]");
 
-                  return pathname === "/subscribe/success" ? this.subscribeSuccess = true : pathname === "/subscribe/failure" ? this.subscribeFailure = true : null
+                    return pathname === "/subscribe/success" ? successMsg.style.display = "block" : pathname === "/subscribe/failure" ? failureMsg.style.display = "block"  : null
                 },
                 loading: false,
                 submit() {
