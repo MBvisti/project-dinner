@@ -1,5 +1,11 @@
 {{define "render"}}
-    <div class="mx-auto lg:w-1/2 w-9/12" x-data="submitHandler()">
+    <div class="mx-auto lg:w-4/12 w-9/12" x-data="submitHandler()" x-init="isSubscribeSuccessful()">
+        <div x-show="subscribeSuccess" class="mb-4 shadow border rounded border-green-300 w-full p-2 md:p-4">
+            <p class="text font-bold md:text-center">Thanks for subscribing!</p>
+        </div>
+        <div x-show="subscribeFailure" class="mb-4 shadow border rounded border-red-300 w-full p-2 md:p-4">
+            <p class="text font-bold md:text-center">Something went wrong - please try again</p>
+        </div>
         <form onsubmit="return Subscribe(event)" x-on:submit="submit()" action="" method="post" class="flex flex-col px-4 border border-gray-100 rounded shadow h-full items-center">
             <h1 class="text-xl text-black mt-3 mb-3 font-bold">Subscribe</h1>
             <input type="text" name="name" placeholder="Name" class="block border border-grey-light w-full p-2 rounded mb-4"/>
@@ -46,6 +52,13 @@
     <script>
         function submitHandler () {
             return {
+                subscribeSuccess: false,
+                subscribeFailure: false,
+                isSubscribeSuccessful() {
+                  const {pathname} = window.location;
+
+                  return pathname === "/subscribe/success" ? this.subscribeSuccess = true : pathname === "/subscribe/failure" ? this.subscribeFailure = true : null
+                },
                 loading: false,
                 submit() {
                     const submitButton = document.querySelector("#submit_button")
@@ -59,5 +72,4 @@
             }
         }
     </script>
-    <script type="text/javascript" src="static/js/handleSubscribe.js"></script>
 {{end}}

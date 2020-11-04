@@ -17,16 +17,17 @@ func Routes(userService service.UserService, emailService service.EmailService, 
 	v1 := r.Group("/v1/api")
 	{
 		v1.GET("/status", APIStatus())
-		v1.POST("/sign-up", SignupUser(userService, emailService))
+		v1.POST("/subscribe", SubscribeUser(userService, emailService))
 		v1.GET("/send-mails", SendMails(emailService))
 		v1.GET("/start-scraping-procedure", StartSpider(spiderService))
 	}
 
 	// All view endpoints here
 	r.GET("/", RenderHome())
-	r.GET("/success", RenderHome())
-	r.GET("/failure", RenderHome())
-	r.GET("/sign-up", RenderSignup())
+	// Subscribe
+	r.GET("/subscribe", RenderSubscribe())
+	r.GET("/subscribe/success", RenderSubscribe())
+	r.GET("/subscribe/failure", RenderSubscribe())
 
 	return r
 }

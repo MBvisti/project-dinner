@@ -6,8 +6,8 @@ import (
 	"project-dinner/pkg/api"
 )
 
-// SignupUser endpoint
-func SignupUser(u api.UserService, e api.EmailService) gin.HandlerFunc {
+// SubscribeUser endpoint
+func SubscribeUser(u api.UserService, e api.EmailService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Header("Content-Type", "application/json")
 
