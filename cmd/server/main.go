@@ -56,6 +56,7 @@ func run() error {
 	m := gomail.NewDialer(mailHost, mailPort, sendGridUser, sendGridPassword)
 
 	usrService := api.NewUserService(s)
+	reciService := api.NewRecipeService(s)
 	emailService := api.NewEmailService(m, s)
 	spiderService := api.NewSpiderService(m, setupCrawler())
 
@@ -63,7 +64,8 @@ func run() error {
 	job, err := emailService.EveryDayMailer()
 	go startMailer(job, err)
 
-	router := rest.Routes(usrService, emailService, spiderService, s)
+	router := rest.Routes(usrService, emailService, spiderService, reciService, s)
+
 	log.Printf("starting server on: " + port)
 	log.Fatal(http.ListenAndServe(":"+port, router))
 
