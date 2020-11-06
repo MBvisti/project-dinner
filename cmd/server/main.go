@@ -33,12 +33,22 @@ func run() error {
 	mailHost := os.Getenv("HOST")
 	connectionString := os.Getenv("DATABASE_URL")
 	mailPort, err := strconv.Atoi(os.Getenv("MAIL_PORT"))
+	sentryDNS := os.Getenv("LOGGING_SERVICE_DNS")
 
 	gin.SetMode(gin.ReleaseMode)
 
 	if whatEnv == "development" {
 		port = "5000"
 		gin.SetMode(gin.DebugMode)
+	}
+
+	if whatEnv != "development" {
+		err := sentry.Init(sentry.ClientOptions{
+			Dsn: sentryDNS,
+		})
+		if err != nil {
+			log.Fatalf("sentry.Init: %s", err)
+		}
 	}
 
 	database, err := setupDatabase(connectionString, whatEnv)
