@@ -2,11 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/gocolly/colly/v2"
-	"github.com/jinzhu/gorm"
-	"github.com/robfig/cron/v3"
-	"gopkg.in/gomail.v2"
 	"log"
 	"net/http"
 	"os"
@@ -14,6 +9,13 @@ import (
 	"project-dinner/pkg/repository"
 	"project-dinner/pkg/rest"
 	"strconv"
+
+	"github.com/getsentry/sentry-go"
+	"github.com/gin-gonic/gin"
+	"github.com/gocolly/colly/v2"
+	"github.com/jinzhu/gorm"
+	"github.com/robfig/cron/v3"
+	"gopkg.in/gomail.v2"
 )
 
 func main() {
