@@ -1,12 +1,12 @@
 {{define "render"}}
-    <div class="flex flex-col md:flex-row md:justify-between md:items-center md:my-auto px-8 md:px-20 mt-12 w-full" x-data="submitHandler()" x-init="isSubscribeSuccessful()">
+    <div class="flex flex-col px-8 mt-12 w-full md:px-20 md:items-center md:my-auto lg:flex-row md:justify-between lg:px-auto lg:justify-around" x-data="submitHandler()" x-init="isSubscribeSuccessful()">
         <div style="display: none" data-subscribe-success class="mb-4 shadow border rounded border-green-300 w-full p-2 md:p-4">
             <p class="text font-bold md:text-center">Thanks for subscribing!</p>
         </div>
         <div style="display: none" data-subscribe-failure class="mb-4 shadow border rounded border-red-300 w-full p-2 md:p-4">
             <p class="text font-bold md:text-center">Something went wrong - please try again</p>
         </div>
-        <form onsubmit="return Subscribe(event)" x-on:submit="submit()" action="" method="post" class="flex flex-col px-4 border border-gray-100 rounded shadow h-full items-center">
+        <form onsubmit="return Subscribe(event)" x-on:submit="submit()" action="" method="post" class="flex flex-col px-4 border border-gray-100 rounded shadow h-full items-center md:mt-20">
             <h1 class="text-xl text-black mt-3 mb-3 font-bold">Subscribe</h1>
             <input type="text" name="name" placeholder="Name" class="block border border-grey-light w-full p-2 rounded mb-4"/>
             <input type="email" name="email" required placeholder="your@mail.com" class="block border border-grey-light w-full p-2 rounded mb-4"/>
@@ -50,12 +50,11 @@
         </form>
         <div class="flex flex-col mt-10 px-4 border border-gray-100 rounded shadow mb-4 pb-4">
             <h1 class="mx-auto text-xl text-black mt-3 mb-3 font-bold mb-4">Really, what is this?</h1>
-            <ul>
+            <ul class="mx-auto">
                 <li>High quality and handpicked recipes</li>
-                <li>Tailored recipes to your needs: </li>
-                <li class="ml-2">High in protein and low in calories, choose fitness</li>
-                <li class="ml-2">Good taste but hard on the waistline, choose comfy</li>
-                <li class="ml-2">A mixture of both, choose regular</li>
+                <li>Tailored recipes to your needs </li>
+                <li>Fitness focused recipes</li>
+                <li>Unsubscribe <strong>anytime!</strong></li>
             </ul>
 
         </div>
