@@ -9,6 +9,7 @@ import (
 	"project-dinner/pkg/repository"
 	"project-dinner/pkg/rest"
 	"strconv"
+	"time"
 
 	"github.com/getsentry/sentry-go"
 	"github.com/gin-gonic/gin"
@@ -43,12 +44,16 @@ func run() error {
 	}
 
 	if whatEnv != "development" {
-		err := sentry.Init(sentry.ClientOptions{
+		sentryErr := sentry.Init(sentry.ClientOptions{
 			Dsn: sentryDNS,
 		})
-		if err != nil {
-			log.Fatalf("sentry.Init: %s", err)
+		if sentryErr != nil {
+			log.Fatalf("sentry.Init: %s", sentryErr)
 		}
+		// Flush buffered events before the program terminates.
+		defer sentry.Flush(2 * time.Second)
+
+		sentry.CaptureMessage("It works!")
 	}
 
 	database, err := setupDatabase(connectionString, whatEnv)
