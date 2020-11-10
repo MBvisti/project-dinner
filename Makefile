@@ -3,7 +3,7 @@ PKG := project-dinner/pkg
 PKG_LIST := $(shell go list ${PKG}/...)
 
 # This version-strategy uses a manual value to set the version string
-VERSION := 0.7.9
+VERSION := 0.7.10
 
 # Where to push the docker image.
 REGISTRY ?= mbvofdocker
