@@ -4,13 +4,14 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/robfig/cron/v3"
-	"gopkg.in/gomail.v2"
 	"html/template"
 	"log"
 	"path/filepath"
 	"runtime"
 	"time"
+
+	"github.com/robfig/cron/v3"
+	"gopkg.in/gomail.v2"
 )
 
 // EmailService is the email service's interface
@@ -73,7 +74,7 @@ func (e *emailService) SendRecipes() error {
 		var t bytes.Buffer
 		err = mailTemplate.Execute(&t, usrRecipe)
 		mail := gomail.NewMessage()
-		mail.SetAddressHeader("From", "noreply@mbvistisen.dk", "Morten's recipe service")
+		mail.SetAddressHeader("From", "noreply@bygourmand.com", "Morten's recipe service")
 		mail.SetHeader("To", user.Email)
 		mail.SetHeader("Subject", "Your daily recipes are here!")
 		mail.SetBody("text/html", t.String())
@@ -127,7 +128,7 @@ func (e *emailService) CreateWelcomeMail(u User) (*gomail.Message, error) {
 	var t bytes.Buffer
 	err = mailTemplate.Execute(&t, u)
 	mail := gomail.NewMessage()
-	mail.SetAddressHeader("From", "noreply@mbvistisen.dk", "Morten's recipe service")
+	mail.SetAddressHeader("From", "noreply@bygourmand.com", "Morten's recipe service")
 	mail.SetHeader("To", u.Email)
 	mail.SetHeader("Subject", "Thanks for signing up!")
 	mail.SetBody("text/html", t.String())
