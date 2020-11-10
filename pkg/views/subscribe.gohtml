@@ -1,12 +1,12 @@
 {{define "render"}}
-    <div class="flex flex-col px-8 my-auto w-full md:px-20 md:items-center md:my-auto lg:flex-row md:justify-between lg:px-auto lg:justify-around" x-data="submitHandler()" x-init="isSubscribeSuccessful()">
-        <div style="display: none" data-subscribe-success class="mb-4 shadow border rounded border-green-300 w-full p-2 md:p-4">
+    <div class="flex flex-col px-8 my-auto w-full md:px-20 md:items-center md:my-auto md:relative lg:flex-row md:justify-between lg:px-auto lg:justify-around" x-data="submitHandler()" x-init="isSubscribeSuccessful()">
+        <div style="display: none" data-subscribe-success class="mb-4 shadow border rounded border-green-300 top-0 p-2 text-center md:py-4 md:absolute md:w-auto md:px-12">
             <p class="text font-bold md:text-center">Thanks for subscribing!</p>
         </div>
-        <div style="display: none" data-subscribe-failure class="mb-4 shadow border rounded border-red-300 w-full p-2 md:p-4">
+        <div style="display: none" data-subscribe-failure class="mb-4 shadow border rounded border-red-300 p-2 top-0 text-center md:py-4 md:absolute md:w-auto md:px-12">
             <p class="text font-bold md:text-center">Something went wrong - please try again</p>
         </div>
-        <form onsubmit="return Subscribe(event)" x-on:submit="submit()" action="" method="post" class="flex flex-col px-4 border border-gray-100 rounded shadow h-full items-center md:mt-20">
+        <form onsubmit="return Subscribe(event)" x-on:submit="submit()" action="" method="post" class="flex flex-col px-4 border border-gray-100 rounded shadow h-full items-center md:w-auto md:mt-20">
             <h1 class="text-xl text-black mt-3 mb-3 font-bold">Subscribe</h1>
             <input type="text" name="name" placeholder="Name" class="block border border-grey-light w-full p-2 rounded mb-4"/>
             <input type="email" name="email" required placeholder="your@mail.com" class="block border border-grey-light w-full p-2 rounded mb-4"/>
