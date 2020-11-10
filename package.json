@@ -10,6 +10,7 @@
     "watch": "watch \"npm run build:tailwind\" ./template"
   },
   "devDependencies": {
+    "autoprefixer": "^10.0.1",
     "postcss": "^8.1.4",
     "postcss-cli": "^8.2.0",
     "tailwind": "^4.0.0"
