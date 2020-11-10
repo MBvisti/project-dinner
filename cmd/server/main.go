@@ -29,8 +29,8 @@ func main() {
 func run() error {
 	port := os.Getenv("PORT")
 	whatEnv := os.Getenv("WHAT_ENVIRONMENT_IS_THIS")
-	sendGridUser := os.Getenv("SEND_GRID_USER")
-	sendGridPassword := os.Getenv("SEND_GRID_API_KEY")
+	sendGridUser := os.Getenv("MAIL_PROVIDER_USER")
+	sendGridPassword := os.Getenv("MAIL_PROVIDER_API_KEY")
 	mailHost := os.Getenv("HOST")
 	connectionString := os.Getenv("DATABASE_URL")
 	mailPort, err := strconv.Atoi(os.Getenv("MAIL_PORT"))
