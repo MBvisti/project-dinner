@@ -30,26 +30,12 @@ func (r *repoService) CreateUser(usr api.User) error {
 		return ErrEmailInvalid
 	}
 
-	var recipeTypeID recipeType
-	err := r.db.Table("recipe_types").Where("type = ?", usr.RecipeType).Select("id").Scan(&recipeTypeID).Error
-	if err != nil {
-		return ErrNoResourceFound
-	}
-
-	var dietaryTypeID dietaryType
-	err = r.db.Table("dietary_types").Where("type = ?", usr.DietaryType).Select("id").Scan(&dietaryTypeID).Error
-	if err != nil {
-		return ErrNoResourceFound
-	}
-
 	nU := user{
-		Email:         usr.Email,
-		Name:          usr.Name,
-		RecipeTypeID:  recipeTypeID.ID,
-		DietaryTypeID: dietaryTypeID.ID,
+		Email: usr.Email,
+		Name:  usr.Name,
 	}
 
-	err = r.db.Create(&nU).Error
+	err := r.db.Create(&nU).Error
 
 	if err != nil {
 		return ErrNoCreate
